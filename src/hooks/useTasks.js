@@ -52,32 +52,34 @@ function readLocal() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-export function useTasks() {
+export function useTasks(boardId = 'my') {
   const [tasks, setTasks]   = useState([])
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
-  const skip = useRef(new Set()) // 自分の書き込みによる Realtime エコーをスキップ
+  const skip = useRef(new Set())
 
   useEffect(() => {
     let mounted = true
+    setTasks([])
+    setLoading(true)
 
     const init = async () => {
-      // Supabase からロード
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
+        .eq('board_id', boardId)
         .order('position', { ascending: true })
 
       if (!mounted) return
       if (error) { setError(error.message); setLoading(false); return }
 
-      // Supabase が空なら localStorage から自動移行
-      if (data.length === 0) {
+      // board_id='my' かつ空なら localStorage から自動移行
+      if (data.length === 0 && boardId === 'my') {
         const local = readLocal()
         if (local.length > 0) {
           const { data: migrated, error: me } = await supabase
             .from('tasks')
-            .insert(local.map(toRow))
+            .insert(local.map(t => ({ ...toRow(t), board_id: 'my' })))
             .select()
           if (!me && migrated) { setTasks(migrated.map(fromRow)); setLoading(false); return }
         }
@@ -89,11 +91,12 @@ export function useTasks() {
 
     init()
 
-    // Realtime：他デバイスの変更をリアルタイム反映
     const ch = supabase
-      .channel('tasks')
+      .channel(`tasks-${boardId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, ({ eventType, new: n, old: o }) => {
         if (!mounted) return
+        // 別ボードのイベントは無視
+        if (eventType !== 'DELETE' && n.board_id !== boardId) return
         if (eventType === 'INSERT') {
           if (skip.current.has(n.id)) { skip.current.delete(n.id); return }
           setTasks(p => [...p, fromRow(n)])
@@ -109,18 +112,18 @@ export function useTasks() {
       .subscribe()
 
     return () => { mounted = false; supabase.removeChannel(ch) }
-  }, [])
+  }, [boardId])
 
   // ── CRUD ────────────────────────────────────────────────────────────────
 
   const addTask = useCallback(async (columnId, taskData) => {
     const tmp = { id: crypto.randomUUID(), columnId, position: Date.now(), ...taskData }
     setTasks(p => [...p, tmp])
-    const { data, error } = await supabase.from('tasks').insert(toRow(tmp)).select().single()
+    const { data, error } = await supabase.from('tasks').insert({ ...toRow(tmp), board_id: boardId }).select().single()
     if (error) { setTasks(p => p.filter(t => t.id !== tmp.id)); return }
     skip.current.add(data.id)
     setTasks(p => p.map(t => t.id === tmp.id ? fromRow(data) : t))
-  }, [])
+  }, [boardId])
 
   const updateTask = useCallback(async (taskId, updates) => {
     setTasks(p => p.map(t => t.id === taskId ? { ...t, ...updates } : t))

@@ -33,6 +33,14 @@
 
 .app-main { flex: 1; overflow: hidden; }
 
+/* ===== Board badge ===== */
+.app-title-group { display: flex; align-items: center; gap: 10px; }
+.board-badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 9999px;
+  background: rgba(99,102,241,0.15); color: #818cf8;
+  border: 1px solid rgba(99,102,241,0.3); font-weight: 600;
+}
+
 /* ===== Nav tabs ===== */
 .app-nav { display: flex; gap: 2px; }
 .nav-tab {
