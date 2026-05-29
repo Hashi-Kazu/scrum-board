@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { arrayMove } from '@dnd-kit/sortable'
+import { supabase } from '../lib/supabase'
 
+// ── localStorage キー（移行用に読み取りのみ使用・変更禁止）──────────────
 const STORAGE_KEY = 'scrum-board-tasks'
-
 const DEFAULT_TASKS = [
   { id: '1', columnId: 'backlog',     title: 'ユーザー認証機能',       description: 'ログイン・ログアウト・パスワードリセット', priority: 'high',   assignee: '田中', position: 1000 },
   { id: '2', columnId: 'backlog',     title: 'ダッシュボード設計',     description: 'KPIウィジェットのレイアウト',              priority: 'medium', assignee: '',     position: 2000 },
@@ -14,7 +15,35 @@ const DEFAULT_TASKS = [
   { id: '8', columnId: 'done',        title: '要件定義',               description: 'ステークホルダーとの要件確認完了',         priority: 'high',   assignee: '佐藤', position: 8000 },
 ]
 
-function load() {
+// ── DB ↔ JS 変換 ──────────────────────────────────────────────────────────
+const fromRow = (r) => ({
+  id:          r.id,
+  columnId:    r.column_id,
+  title:       r.title,
+  description: r.description ?? '',
+  priority:    r.priority ?? 'medium',
+  assignee:    r.assignee ?? '',
+  storyPoints: r.story_points ?? null,
+  sprintId:    r.sprint_id ?? null,
+  position:    r.position,
+  completedAt: r.completed_at ?? null,
+})
+
+const toRow = (t) => ({
+  id:           t.id,
+  column_id:    t.columnId,
+  title:        t.title,
+  description:  t.description  ?? '',
+  priority:     t.priority     ?? 'medium',
+  assignee:     t.assignee     ?? '',
+  story_points: t.storyPoints  ?? null,
+  sprint_id:    t.sprintId     ?? null,
+  position:     t.position     ?? Date.now(),
+  completed_at: t.completedAt  ?? null,
+})
+
+// ── localStorage からデータを読み出す（移行専用）──────────────────────────
+function readLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return JSON.parse(raw)
@@ -22,64 +51,141 @@ function load() {
   return DEFAULT_TASKS
 }
 
-function save(tasks) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)) } catch {}
-}
-
+// ─────────────────────────────────────────────────────────────────────────
 export function useTasks() {
-  const [tasks, setTasks] = useState(load)
+  const [tasks, setTasks]   = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error,   setError]   = useState(null)
+  const skip = useRef(new Set()) // 自分の書き込みによる Realtime エコーをスキップ
 
-  // localStorage に書き込む
-  useEffect(() => { save(tasks) }, [tasks])
+  useEffect(() => {
+    let mounted = true
 
-  const addTask = useCallback((columnId, taskData) => {
-    setTasks(prev => [
-      ...prev,
-      { id: crypto.randomUUID(), columnId, position: Date.now(), ...taskData },
-    ])
-  }, [])
+    const init = async () => {
+      // Supabase からロード
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .order('position', { ascending: true })
 
-  const updateTask = useCallback((taskId, updates) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t))
-  }, [])
+      if (!mounted) return
+      if (error) { setError(error.message); setLoading(false); return }
 
-  const deleteTask = useCallback((taskId) => {
-    setTasks(prev => prev.filter(t => t.id !== taskId))
-  }, [])
-
-  const moveTask = useCallback((taskId, newColumnId) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id !== taskId) return t
-      return {
-        ...t,
-        columnId: newColumnId,
-        // 完了カラムへ移動→記録、完了から外れる→クリア
-        completedAt: newColumnId === 'done'
-          ? (t.completedAt ?? new Date().toISOString())
-          : null,
+      // Supabase が空なら localStorage から自動移行
+      if (data.length === 0) {
+        const local = readLocal()
+        if (local.length > 0) {
+          const { data: migrated, error: me } = await supabase
+            .from('tasks')
+            .insert(local.map(toRow))
+            .select()
+          if (!me && migrated) { setTasks(migrated.map(fromRow)); setLoading(false); return }
+        }
       }
-    }))
-  }, [])
 
-  // 同じカラム内での並び替え、またはカラムをまたぐ挿入
-  const reorderTasks = useCallback((activeId, overId, newColumnId) => {
-    setTasks(prev => {
-      const oldIndex = prev.findIndex(t => t.id === activeId)
-      const newIndex = prev.findIndex(t => t.id === overId)
-      if (oldIndex === -1 || newIndex === -1) return prev
-      const updated = prev.map(t => {
-        if (t.id !== activeId) return t
-        return {
-          ...t,
-          columnId: newColumnId,
-          completedAt: newColumnId === 'done'
-            ? (t.completedAt ?? new Date().toISOString())
-            : null,
+      setTasks(data.map(fromRow))
+      setLoading(false)
+    }
+
+    init()
+
+    // Realtime：他デバイスの変更をリアルタイム反映
+    const ch = supabase
+      .channel('tasks')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, ({ eventType, new: n, old: o }) => {
+        if (!mounted) return
+        if (eventType === 'INSERT') {
+          if (skip.current.has(n.id)) { skip.current.delete(n.id); return }
+          setTasks(p => [...p, fromRow(n)])
+        }
+        if (eventType === 'UPDATE') {
+          if (skip.current.has(n.id)) { skip.current.delete(n.id); return }
+          setTasks(p => p.map(t => t.id === n.id ? fromRow(n) : t))
+        }
+        if (eventType === 'DELETE') {
+          setTasks(p => p.filter(t => t.id !== o.id))
         }
       })
-      return arrayMove(updated, oldIndex, newIndex)
-    })
+      .subscribe()
+
+    return () => { mounted = false; supabase.removeChannel(ch) }
   }, [])
 
-  return { tasks, loading: false, error: null, addTask, updateTask, deleteTask, moveTask, reorderTasks }
+  // ── CRUD ────────────────────────────────────────────────────────────────
+
+  const addTask = useCallback(async (columnId, taskData) => {
+    const tmp = { id: crypto.randomUUID(), columnId, position: Date.now(), ...taskData }
+    setTasks(p => [...p, tmp])
+    const { data, error } = await supabase.from('tasks').insert(toRow(tmp)).select().single()
+    if (error) { setTasks(p => p.filter(t => t.id !== tmp.id)); return }
+    skip.current.add(data.id)
+    setTasks(p => p.map(t => t.id === tmp.id ? fromRow(data) : t))
+  }, [])
+
+  const updateTask = useCallback(async (taskId, updates) => {
+    setTasks(p => p.map(t => t.id === taskId ? { ...t, ...updates } : t))
+    const row = {}
+    if (updates.columnId    !== undefined) row.column_id    = updates.columnId
+    if (updates.title       !== undefined) row.title        = updates.title
+    if (updates.description !== undefined) row.description  = updates.description
+    if (updates.priority    !== undefined) row.priority     = updates.priority
+    if (updates.assignee    !== undefined) row.assignee     = updates.assignee
+    if (updates.storyPoints !== undefined) row.story_points = updates.storyPoints
+    if (updates.sprintId    !== undefined) row.sprint_id    = updates.sprintId
+    if (updates.completedAt !== undefined) row.completed_at = updates.completedAt
+    skip.current.add(taskId)
+    await supabase.from('tasks').update(row).eq('id', taskId)
+  }, [])
+
+  const deleteTask = useCallback(async (taskId) => {
+    setTasks(p => p.filter(t => t.id !== taskId))
+    await supabase.from('tasks').delete().eq('id', taskId)
+  }, [])
+
+  const moveTask = useCallback(async (taskId, newColumnId) => {
+    let completedAt = null
+    setTasks(p => p.map(t => {
+      if (t.id !== taskId) return t
+      completedAt = newColumnId === 'done' ? (t.completedAt ?? new Date().toISOString()) : null
+      return { ...t, columnId: newColumnId, completedAt }
+    }))
+    skip.current.add(taskId)
+    await supabase.from('tasks').update({ column_id: newColumnId, completed_at: completedAt }).eq('id', taskId)
+  }, [])
+
+  const reorderTasks = useCallback(async (activeId, overId, newColumnId) => {
+    let movedTask = null
+    let reordered = []
+
+    setTasks(p => {
+      const oldIdx = p.findIndex(t => t.id === activeId)
+      const newIdx = p.findIndex(t => t.id === overId)
+      if (oldIdx === -1 || newIdx === -1) return p
+      const updated = p.map(t => {
+        if (t.id !== activeId) return t
+        const completedAt = newColumnId === 'done' ? (t.completedAt ?? new Date().toISOString()) : null
+        movedTask = { ...t, columnId: newColumnId, completedAt }
+        return movedTask
+      })
+      reordered = arrayMove(updated, oldIdx, newIdx)
+      return reordered
+    })
+
+    // カラム内の並び順を position で DB に保存
+    setTimeout(async () => {
+      const colTasks = reordered.filter(t => t.columnId === newColumnId)
+      for (let i = 0; i < colTasks.length; i++) {
+        const t = colTasks[i]
+        const newPos = (i + 1) * 1000
+        skip.current.add(t.id)
+        await supabase.from('tasks').update({
+          position:     newPos,
+          column_id:    t.columnId,
+          completed_at: t.completedAt ?? null,
+        }).eq('id', t.id)
+      }
+    }, 0)
+  }, [])
+
+  return { tasks, loading, error, addTask, updateTask, deleteTask, moveTask, reorderTasks }
 }
