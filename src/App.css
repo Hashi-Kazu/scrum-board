@@ -421,7 +421,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); curso
   }
   .app-title-group { flex: 1; min-width: 0; }
   .app-title { font-size: 15px; }
-  .app-stats { gap: 8px; }
+  .app-stats { gap: 8px; margin-left: auto; padding-left: 12px; }
   .progress-bar-wrap { display: none; } /* スペース節約 */
   .sprint-filter { max-width: 90px; font-size: 12px; padding: 4px 6px; }
   .stat-chip { font-size: 11px; padding: 2px 7px; }
