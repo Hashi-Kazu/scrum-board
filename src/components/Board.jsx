@@ -3,6 +3,7 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   closestCorners,
@@ -14,7 +15,9 @@ export default function Board({ columns, tasks, sprints, onAddTask, onUpdateTask
   const [activeTask, setActiveTask] = useState(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // スマホ：長押し 200ms でドラッグ開始（スクロールと干渉しない）
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
   )
 
   const handleDragStart = ({ active }) => {

@@ -16,6 +16,7 @@ export default function ProjectSelector({ projects, selectedId, onSelect, onAdd,
   }, [])
 
   const current = projects.find(p => p.id === selectedId)
+  const label = current?.name ?? '…'
 
   const handleAdd = () => {
     if (!newName.trim()) return
@@ -41,8 +42,10 @@ export default function ProjectSelector({ projects, selectedId, onSelect, onAdd,
 
   return (
     <div className="project-selector" ref={ref}>
-      <button className="project-trigger" onClick={() => setOpen(o => !o)}>
-        <span className="project-trigger-name">{current?.name ?? '…'}</span>
+      <div className="project-selector-label">PROJECT</div>
+      <button className="project-trigger" onClick={() => setOpen(o => !o)} title="プロジェクトを切り替え">
+        <span className="project-trigger-icon">🗂</span>
+        <span className="project-trigger-name">{label}</span>
         <span className="project-trigger-arrow">{open ? '▲' : '▼'}</span>
       </button>
 

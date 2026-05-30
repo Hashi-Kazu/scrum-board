@@ -34,21 +34,26 @@
 .app-main { flex: 1; overflow: hidden; }
 
 /* ===== App title group ===== */
-.app-title-group { display: flex; align-items: center; gap: 10px; }
+.app-title-group { display: flex; align-items: center; gap: 12px; }
 
 /* ===== Project Selector ===== */
-.project-selector { position: relative; }
+.project-selector { position: relative; display: flex; flex-direction: column; gap: 2px; }
+.project-selector-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  color: #4f6280; line-height: 1; padding-left: 2px;
+}
 
 .project-trigger {
-  display: flex; align-items: center; gap: 6px;
-  padding: 4px 10px; border-radius: var(--radius-sm);
-  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
-  color: #818cf8; font-size: 12px; font-weight: 600; cursor: pointer;
-  transition: background 0.15s;
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 12px; border-radius: var(--radius-sm);
+  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3);
+  color: #a5b4fc; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background 0.15s; min-height: 36px;
 }
 .project-trigger:hover { background: rgba(99,102,241,0.22); }
-.project-trigger-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.project-trigger-arrow { font-size: 9px; opacity: 0.7; }
+.project-trigger-icon { font-size: 15px; line-height: 1; }
+.project-trigger-name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-trigger-arrow { font-size: 9px; opacity: 0.6; margin-left: 2px; }
 
 .project-dropdown {
   position: absolute; top: calc(100% + 6px); left: 0;
@@ -100,8 +105,9 @@
 /* ===== Nav tabs ===== */
 .app-nav { display: flex; gap: 2px; }
 .nav-tab {
-  font-size: 12px; padding: 5px 12px; border-radius: var(--radius-sm);
+  font-size: 13px; padding: 6px 14px; border-radius: var(--radius-sm);
   color: var(--text-muted); transition: background 0.15s, color 0.15s;
+  min-height: 36px; display: flex; align-items: center;
 }
 .nav-tab:hover { background: var(--bg-hover); color: var(--text); }
 .nav-tab--active { background: var(--bg-hover); color: var(--text); font-weight: 600; }
@@ -271,7 +277,7 @@
 
 .column-header { padding: 14px 14px 10px; }
 .column-title-row { display: flex; align-items: center; justify-content: space-between; }
-.column-title { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.4px; }
+.column-title { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: 0.4px; }
 .column-count {
   font-size: 11px; font-weight: 700; color: #fff;
   border-radius: 9999px; padding: 1px 7px; min-width: 20px; text-align: center;
@@ -291,8 +297,9 @@
 }
 
 .add-card-btn {
-  font-size: 13px; color: var(--text-muted); padding: 8px 10px;
+  font-size: 14px; color: var(--text-muted); padding: 10px 10px;
   border-radius: var(--radius-sm); text-align: left; width: 100%;
+  min-height: 44px; display: flex; align-items: center;
   transition: background 0.15s, color 0.15s;
 }
 .add-card-btn:hover { background: var(--bg-hover); color: var(--text); }
@@ -322,22 +329,22 @@
 }
 .card-menu-btn:hover { background: var(--bg-hover); color: var(--text); }
 
-.card-title { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
-.card-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px; }
+.card-title { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
+.card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px; }
 
 .card-footer { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
 .assignee-avatar {
   width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center;
   justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
 }
-.assignee-name { font-size: 11px; color: var(--text-muted); }
+.assignee-name { font-size: 12px; color: var(--text-muted); }
 
 /* ===== Add Card Form ===== */
 .add-card-form { display: flex; flex-direction: column; gap: 8px; }
 .form-input {
-  width: 100%; padding: 7px 10px; border-radius: var(--radius-sm);
+  width: 100%; padding: 8px 10px; border-radius: var(--radius-sm);
   background: var(--bg); border: 1px solid var(--border);
-  color: var(--text); outline: none; font-size: 13px;
+  color: var(--text); outline: none; font-size: 14px;
   transition: border-color 0.15s;
 }
 .form-input:focus { border-color: var(--accent); }
@@ -348,7 +355,7 @@
 .form-actions { display: flex; gap: 8px; }
 
 /* ===== Buttons ===== */
-.btn { padding: 7px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; transition: background 0.15s, opacity 0.15s; }
+.btn { padding: 8px 16px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: background 0.15s, opacity 0.15s; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-primary { background: var(--accent); color: #fff; }
 .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
@@ -380,7 +387,7 @@
 .modal-close:hover { background: var(--bg-hover); color: var(--text); }
 
 .modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
-.form-label { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; display: block; }
+.form-label { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; display: block; }
 
 .modal-footer {
   padding: 14px 20px; border-top: 1px solid var(--border);
@@ -390,3 +397,71 @@
 
 .delete-confirm { display: flex; align-items: center; gap: 10px; font-size: 13px; width: 100%; }
 .delete-confirm span { flex: 1; color: var(--text-muted); }
+
+/* ===== Mobile responsive (≤ 640px) ===== */
+@media (max-width: 640px) {
+
+  /* ── Header ── */
+  .app-header { padding: 0 12px; }
+  .app-header-inner {
+    flex-wrap: wrap; height: auto; padding: 10px 0; gap: 8px;
+  }
+  .app-title-group { flex: 1; min-width: 0; }
+  .app-title { font-size: 15px; }
+  .app-stats { gap: 8px; }
+  .progress-bar-wrap { display: none; } /* スペース節約 */
+  .sprint-filter { max-width: 90px; font-size: 12px; padding: 4px 6px; }
+  .stat-chip { font-size: 11px; padding: 2px 7px; }
+  .app-nav {
+    order: 10; width: 100%; justify-content: center;
+    border-top: 1px solid var(--border); padding-top: 8px;
+  }
+  .nav-tab { flex: 1; justify-content: center; font-size: 12px; padding: 8px 4px; }
+
+  /* ── Board ── */
+  .board { padding: 10px; gap: 10px; min-height: calc(100vh - 120px); }
+  .column { flex: 0 0 82vw; max-height: calc(100vh - 145px); }
+
+  /* ── Card ── */
+  .card { padding: 12px 14px; }
+  .card-menu-btn {
+    min-width: 36px; min-height: 36px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sp-badge { min-height: 26px; padding: 4px 10px; }
+  .assignee-avatar { width: 24px; height: 24px; font-size: 11px; }
+
+  /* ── Project actions: always visible on touch ── */
+  .project-item-actions { opacity: 1; }
+  .project-action-btn { padding: 6px 8px; min-height: 36px; }
+  .project-trigger-name { max-width: 100px; }
+
+  /* ── Modals ── */
+  .modal { width: 96vw; max-width: 96vw; }
+  .modal-body { padding: 14px 14px; }
+  .modal-header { padding: 14px; }
+  .modal-footer { padding: 12px 14px; }
+  .form-row { flex-direction: column; }
+  .complete-stats { flex-wrap: wrap; }
+
+  /* ── Stats view ── */
+  .stats-view { padding: 14px; }
+  .stats-topbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .sprint-select-stats { max-width: 100%; width: 100%; }
+  .kpi-row { gap: 8px; }
+  .kpi-card { min-width: 72px; padding: 10px 12px; flex: 1; }
+  .kpi-value { font-size: 18px; }
+
+  /* ── Sprints view ── */
+  .sprints-view { padding: 14px; }
+  .sprint-card-top { flex-direction: column; gap: 10px; }
+  .sprint-actions { flex-wrap: wrap; }
+  .btn-sm { min-height: 36px; }
+}
+
+/* ===== Tablet responsive (641px – 900px) ===== */
+@media (min-width: 641px) and (max-width: 900px) {
+  .column { flex: 0 0 240px; }
+  .app-header-inner { gap: 10px; }
+  .progress-bar-track { width: 80px; }
+}
