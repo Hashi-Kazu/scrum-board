@@ -128,7 +128,7 @@ export default function Card({ task, columnId, sprints, onUpdate, onDelete, isOv
               onClick={startEditDue}
               title="期限をクリックして設定"
             >
-              📅 {formatDue(task.dueDate) ?? '–'}
+              <span className="due-icon">📅</span>{formatDue(task.dueDate) ?? '–'}
             </span>
           )}
 

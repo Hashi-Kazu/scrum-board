@@ -134,6 +134,8 @@
 .due-badge--set     { background: rgba(99,102,241,0.12); color: #a5b4fc; }
 .due-badge--overdue { background: rgba(239,68,68,0.15);  color: #f87171; }
 .due-badge--soon    { background: rgba(245,158,11,0.15); color: #fbbf24; }
+/* カレンダー絵文字を白く表示 */
+.due-badge .due-icon { filter: brightness(0) invert(1); font-size: 11px; }
 .due-input {
   width: 120px; font-size: 12px; padding: 2px 6px; border-radius: 9999px;
   background: var(--bg); border: 1px solid var(--accent); color: var(--text); outline: none;
