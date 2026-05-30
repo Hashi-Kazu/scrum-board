@@ -128,12 +128,7 @@ export default function Card({ task, columnId, sprints, onUpdate, onDelete, isOv
               onClick={startEditDue}
               title="期限をクリックして設定"
             >
-              <svg className="due-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <rect x="2" y="3" width="12" height="11" rx="1.5"/>
-                <path d="M2 7h12"/>
-                <path d="M5 1v4M11 1v4"/>
-              </svg>
-              {formatDue(task.dueDate) ?? '–'}
+              📅 {formatDue(task.dueDate) ?? '–'}
             </span>
           )}
 
