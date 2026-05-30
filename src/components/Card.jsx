@@ -79,19 +79,26 @@ export default function Card({ task, columnId, sprints, onUpdate, onDelete, isOv
         ref={setNodeRef}
         style={style}
         className={`card ${isOverlay ? 'card--overlay' : ''}`}
-        {...attributes}
-        {...listeners}
       >
         <div className="card-top">
           <span className={`priority-badge ${meta.className}`}>{meta.label}</span>
-          <button
-            className="card-menu-btn"
-            onPointerDown={e => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); setShowModal(true) }}
-            title="編集"
-          >
-            ⋯
-          </button>
+          <div className="card-top-right">
+            {/* ドラッグハンドル：タッチではここだけDnD有効 */}
+            <span
+              className="drag-handle"
+              {...attributes}
+              {...listeners}
+              title="ドラッグして移動"
+            >⠿</span>
+            <button
+              className="card-menu-btn"
+              onPointerDown={e => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); setShowModal(true) }}
+              title="編集"
+            >
+              ⋯
+            </button>
+          </div>
         </div>
         <p className="card-title">{task.title}</p>
         {task.description && <p className="card-desc">{task.description}</p>}
