@@ -33,13 +33,69 @@
 
 .app-main { flex: 1; overflow: hidden; }
 
-/* ===== Board badge ===== */
+/* ===== App title group ===== */
 .app-title-group { display: flex; align-items: center; gap: 10px; }
-.board-badge {
-  font-size: 11px; padding: 2px 8px; border-radius: 9999px;
-  background: rgba(99,102,241,0.15); color: #818cf8;
-  border: 1px solid rgba(99,102,241,0.3); font-weight: 600;
+
+/* ===== Project Selector ===== */
+.project-selector { position: relative; }
+
+.project-trigger {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: var(--radius-sm);
+  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+  color: #818cf8; font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: background 0.15s;
 }
+.project-trigger:hover { background: rgba(99,102,241,0.22); }
+.project-trigger-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-trigger-arrow { font-size: 9px; opacity: 0.7; }
+
+.project-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  min-width: 200px; z-index: 300; padding: 6px 0;
+}
+
+.project-item {
+  display: flex; align-items: center; gap: 4px;
+  padding: 2px 8px 2px 4px;
+}
+.project-item--active { background: rgba(99,102,241,0.08); }
+
+.project-item-name {
+  flex: 1; display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  color: var(--text); font-size: 13px; text-align: left;
+  transition: background 0.1s;
+}
+.project-item-name:hover { background: var(--bg-hover); }
+.project-check { color: #6366f1; font-size: 11px; }
+
+.project-item-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.1s; }
+.project-item:hover .project-item-actions { opacity: 1; }
+.project-action-btn {
+  font-size: 13px; padding: 3px 5px; border-radius: 4px;
+  transition: background 0.1s;
+}
+.project-action-btn:hover { background: var(--bg-hover); }
+
+.project-edit-input {
+  flex: 1; padding: 5px 8px; background: var(--bg);
+  border: 1px solid var(--accent); border-radius: var(--radius-sm);
+  color: var(--text); font-size: 13px; outline: none;
+}
+
+.project-divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+.project-add-form {
+  display: flex; align-items: center; gap: 6px; padding: 4px 8px;
+}
+.project-add-btn {
+  width: 100%; padding: 7px 12px; font-size: 13px; color: var(--text-muted);
+  text-align: left; transition: background 0.1s;
+}
+.project-add-btn:hover { background: var(--bg-hover); color: var(--text); }
 
 /* ===== Nav tabs ===== */
 .app-nav { display: flex; gap: 2px; }

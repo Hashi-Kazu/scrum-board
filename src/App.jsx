@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Board from './components/Board'
 import SprintsView from './components/SprintsView'
 import StatsView from './components/StatsView'
+import ProjectSelector from './components/ProjectSelector'
 import { useTasks } from './hooks/useTasks'
 import { useSprints } from './hooks/useSprints'
+import { useProjects } from './hooks/useProjects'
 import './App.css'
 
 const COLUMNS = [
@@ -20,26 +22,11 @@ const VIEWS = [
   { id: 'sprints', label: '⚙️ スプリント' },
 ]
 
-const BOARD_LABELS = { my: '🔒 自分用', demo: '🌐 デモ' }
-
-function getBoardId() {
-  const hash = window.location.hash.slice(1)
-  return hash || 'my'
-}
-
 export default function App() {
-  const [boardId, setBoardId] = useState(getBoardId)
+  const { projects, selectedId, selectedProject, selectProject, addProject, renameProject, deleteProject } = useProjects()
 
-  // URLハッシュの変化を監視・初期ハッシュが空なら #my に設定
-  useEffect(() => {
-    if (!window.location.hash) window.location.hash = 'my'
-    const handler = () => setBoardId(getBoardId())
-    window.addEventListener('hashchange', handler)
-    return () => window.removeEventListener('hashchange', handler)
-  }, [])
-
-  const { tasks, loading, addTask, updateTask, deleteTask, moveTask, reorderTasks } = useTasks(boardId)
-  const { sprints, addSprint, updateSprint, deleteSprint, activateSprint, completeSprint } = useSprints(boardId)
+  const { tasks, loading, addTask, updateTask, deleteTask, moveTask, reorderTasks } = useTasks(selectedId)
+  const { sprints, addSprint, updateSprint, deleteSprint, activateSprint, completeSprint } = useSprints(selectedId)
 
   const [view, setView] = useState('board')
   const [filterSprintId, setFilterSprintId] = useState('all')
@@ -104,7 +91,14 @@ export default function App() {
         <div className="app-header-inner">
           <div className="app-title-group">
             <h1 className="app-title">📋 スクラムボード</h1>
-            <span className="board-badge">{BOARD_LABELS[boardId] ?? `#${boardId}`}</span>
+            <ProjectSelector
+              projects={projects}
+              selectedId={selectedId}
+              onSelect={selectProject}
+              onAdd={addProject}
+              onRename={renameProject}
+              onDelete={deleteProject}
+            />
           </div>
 
           <nav className="app-nav">

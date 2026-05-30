@@ -52,7 +52,7 @@ function readLocal() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-export function useTasks(boardId = 'my') {
+export function useTasks(projectId = 'my') {
   const [tasks, setTasks]   = useState([])
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
@@ -67,14 +67,14 @@ export function useTasks(boardId = 'my') {
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
-        .eq('board_id', boardId)
+        .eq('board_id', projectId)
         .order('position', { ascending: true })
 
       if (!mounted) return
       if (error) { setError(error.message); setLoading(false); return }
 
       // board_id='my' かつ空なら localStorage から自動移行
-      if (data.length === 0 && boardId === 'my') {
+      if (data.length === 0 && projectId === 'my') {
         const local = readLocal()
         if (local.length > 0) {
           const { data: migrated, error: me } = await supabase
@@ -92,11 +92,11 @@ export function useTasks(boardId = 'my') {
     init()
 
     const ch = supabase
-      .channel(`tasks-${boardId}`)
+      .channel(`tasks-${projectId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, ({ eventType, new: n, old: o }) => {
         if (!mounted) return
         // 別ボードのイベントは無視
-        if (eventType !== 'DELETE' && n.board_id !== boardId) return
+        if (eventType !== 'DELETE' && n.board_id !== projectId) return
         if (eventType === 'INSERT') {
           if (skip.current.has(n.id)) { skip.current.delete(n.id); return }
           setTasks(p => [...p, fromRow(n)])
@@ -112,18 +112,18 @@ export function useTasks(boardId = 'my') {
       .subscribe()
 
     return () => { mounted = false; supabase.removeChannel(ch) }
-  }, [boardId])
+  }, [projectId])
 
   // ── CRUD ────────────────────────────────────────────────────────────────
 
   const addTask = useCallback(async (columnId, taskData) => {
     const tmp = { id: crypto.randomUUID(), columnId, position: Date.now(), ...taskData }
     setTasks(p => [...p, tmp])
-    const { data, error } = await supabase.from('tasks').insert({ ...toRow(tmp), board_id: boardId }).select().single()
+    const { data, error } = await supabase.from('tasks').insert({ ...toRow(tmp), board_id: projectId }).select().single()
     if (error) { setTasks(p => p.filter(t => t.id !== tmp.id)); return }
     skip.current.add(data.id)
     setTasks(p => p.map(t => t.id === tmp.id ? fromRow(data) : t))
-  }, [boardId])
+  }, [projectId])
 
   const updateTask = useCallback(async (taskId, updates) => {
     setTasks(p => p.map(t => t.id === taskId ? { ...t, ...updates } : t))

@@ -40,7 +40,7 @@ function readLocal() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-export function useSprints(boardId = 'my') {
+export function useSprints(projectId = 'my') {
   const [sprints, setSprints] = useState([])
   const skip = useRef(new Set())
 
@@ -52,13 +52,13 @@ export function useSprints(boardId = 'my') {
       const { data, error } = await supabase
         .from('sprints')
         .select('*')
-        .eq('board_id', boardId)
+        .eq('board_id', projectId)
         .order('created_at', { ascending: true })
 
       if (!mounted || error) return
 
       // board_id='my' かつ空なら localStorage から自動移行
-      if (data.length === 0 && boardId === 'my') {
+      if (data.length === 0 && projectId === 'my') {
         const local = readLocal()
         if (local.length > 0) {
           const { data: migrated, error: me } = await supabase
@@ -75,10 +75,10 @@ export function useSprints(boardId = 'my') {
     init()
 
     const ch = supabase
-      .channel(`sprints-${boardId}`)
+      .channel(`sprints-${projectId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sprints' }, ({ eventType, new: n, old: o }) => {
         if (!mounted) return
-        if (eventType !== 'DELETE' && n.board_id !== boardId) return
+        if (eventType !== 'DELETE' && n.board_id !== projectId) return
         if (eventType === 'INSERT') {
           if (skip.current.has(n.id)) { skip.current.delete(n.id); return }
           setSprints(p => [...p, fromRow(n)])
@@ -94,7 +94,7 @@ export function useSprints(boardId = 'my') {
       .subscribe()
 
     return () => { mounted = false; supabase.removeChannel(ch) }
-  }, [boardId])
+  }, [projectId])
 
   const activeSprint = sprints.find(s => s.status === 'active') ?? null
 
@@ -103,8 +103,8 @@ export function useSprints(boardId = 'my') {
     const s = { id, status: 'planned', velocity: null, ...data }
     setSprints(p => [...p, s])
     skip.current.add(id)
-    await supabase.from('sprints').insert({ ...toRow(s), board_id: boardId })
-  }, [boardId])
+    await supabase.from('sprints').insert({ ...toRow(s), board_id: projectId })
+  }, [projectId])
 
   const updateSprint = useCallback(async (id, updates) => {
     setSprints(p => p.map(s => s.id === id ? { ...s, ...updates } : s))
