@@ -42,10 +42,12 @@ export default function ProjectSelector({ projects, selectedId, onSelect, onAdd,
 
   return (
     <div className="project-selector" ref={ref}>
-      <div className="project-selector-label">PROJECT</div>
       <button className="project-trigger" onClick={() => setOpen(o => !o)} title="プロジェクトを切り替え">
         <span className="project-trigger-icon">🗂</span>
-        <span className="project-trigger-name">{label}</span>
+        <span className="project-trigger-meta">
+          <span className="project-trigger-label">PROJECT</span>
+          <span className="project-trigger-name">{label}</span>
+        </span>
         <span className="project-trigger-arrow">{open ? '▲' : '▼'}</span>
       </button>
 

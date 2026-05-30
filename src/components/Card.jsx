@@ -14,10 +14,38 @@ const avatarColor = (name) => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.l
 
 export default function Card({ task, columnId, sprints, onUpdate, onDelete, isOverlay }) {
   const [showModal, setShowModal] = useState(false)
-  const [editingSP, setEditingSP] = useState(false)
-  const [spVal, setSpVal] = useState('')
+  const [editingSP,  setEditingSP]  = useState(false)
+  const [spVal,      setSpVal]      = useState('')
+  const [editingDue, setEditingDue] = useState(false)
+  const [dueVal,     setDueVal]     = useState('')
 
   const sprint = sprints?.find(s => s.id === task.sprintId)
+
+  // 期限の表示フォーマット
+  const formatDue = (d) => {
+    if (!d) return null
+    const dt = new Date(d + 'T00:00:00')
+    return `${dt.getMonth() + 1}/${dt.getDate()}`
+  }
+  const dueBadgeClass = () => {
+    if (!task.dueDate || task.columnId === 'done') return 'due-badge--set'
+    const today = new Date(); today.setHours(0,0,0,0)
+    const due   = new Date(task.dueDate + 'T00:00:00')
+    if (due < today) return 'due-badge--overdue'
+    const diff = (due - today) / 86400000
+    if (diff <= 2) return 'due-badge--soon'
+    return 'due-badge--set'
+  }
+
+  const startEditDue = (e) => {
+    e.stopPropagation()
+    setDueVal(task.dueDate ?? '')
+    setEditingDue(true)
+  }
+  const commitDue = () => {
+    setEditingDue(false)
+    onUpdate(task.id, { dueDate: dueVal || null })
+  }
 
   const startEditSP = (e) => {
     e.stopPropagation()
@@ -81,6 +109,29 @@ export default function Card({ task, columnId, sprints, onUpdate, onDelete, isOv
               <span className="assignee-name">{task.assignee}</span>
             </>
           )}
+          {/* 期限：クリックでインライン編集 */}
+          {editingDue ? (
+            <input
+              className="due-input"
+              type="date"
+              autoFocus
+              value={dueVal}
+              onPointerDown={e => e.stopPropagation()}
+              onChange={e => setDueVal(e.target.value)}
+              onBlur={commitDue}
+              onKeyDown={e => { if (e.key === 'Enter') commitDue(); if (e.key === 'Escape') setEditingDue(false) }}
+            />
+          ) : (
+            <span
+              className={`due-badge ${task.dueDate ? dueBadgeClass() : ''}`}
+              onPointerDown={e => e.stopPropagation()}
+              onClick={startEditDue}
+              title="期限をクリックして設定"
+            >
+              📅 {formatDue(task.dueDate) ?? '–'}
+            </span>
+          )}
+
           {/* ストーリーポイント：クリックでインライン編集 */}
           {editingSP ? (
             <input

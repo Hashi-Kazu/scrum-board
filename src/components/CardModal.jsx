@@ -7,6 +7,7 @@ export default function CardModal({ task, sprints = [], onSave, onDelete, onClos
   const [assignee, setAssignee] = useState(task.assignee ?? '')
   const [storyPoints, setStoryPoints] = useState(task.storyPoints ?? '')
   const [sprintId, setSprintId] = useState(task.sprintId ?? '')
+  const [dueDate, setDueDate] = useState(task.dueDate ?? '')
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function CardModal({ task, sprints = [], onSave, onDelete, onClos
       assignee: assignee.trim(),
       storyPoints: storyPoints !== '' ? Number(storyPoints) : null,
       sprintId: sprintId || null,
+      dueDate: dueDate || null,
     })
   }
 
@@ -78,18 +80,27 @@ export default function CardModal({ task, sprints = [], onSave, onDelete, onClos
                 onChange={e => setStoryPoints(e.target.value)}
               />
             </div>
-            {sprints.length > 0 && (
-              <div style={{ flex: 1 }}>
-                <label className="form-label">スプリント</label>
-                <select className="form-input form-select" value={sprintId} onChange={e => setSprintId(e.target.value)}>
-                  <option value="">未割り当て</option>
-                  {sprints.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div style={{ flex: 1 }}>
+              <label className="form-label">期限</label>
+              <input
+                className="form-input"
+                type="date"
+                value={dueDate}
+                onChange={e => setDueDate(e.target.value)}
+              />
+            </div>
           </div>
+          {sprints.length > 0 && (
+            <div>
+              <label className="form-label">スプリント</label>
+              <select className="form-input form-select" value={sprintId} onChange={e => setSprintId(e.target.value)}>
+                <option value="">未割り当て</option>
+                {sprints.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">

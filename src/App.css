@@ -9,11 +9,10 @@
 }
 .app-header-inner {
   display: flex; align-items: center; justify-content: space-between;
-  max-width: 1600px; margin: 0 auto; height: 64px; gap: 16px;
+  max-width: 1600px; margin: 0 auto; min-height: 64px; gap: 16px;
+  padding: 10px 0;
 }
-.app-title-group { display: flex; flex-direction: column; gap: 1px; }
-.app-title { font-size: 18px; font-weight: 700; color: #f1f5f9; }
-.app-subtitle { font-size: 11px; color: var(--text-muted); }
+.app-title { font-size: 18px; font-weight: 700; color: #f1f5f9; flex-shrink: 0; }
 
 .app-stats { display: flex; align-items: center; gap: 12px; }
 .progress-bar-wrap { display: flex; align-items: center; gap: 8px; }
@@ -34,26 +33,24 @@
 .app-main { flex: 1; overflow: hidden; }
 
 /* ===== App title group ===== */
-.app-title-group { display: flex; align-items: center; gap: 12px; }
+.app-title-group { display: flex; align-items: center; gap: 14px; }
 
 /* ===== Project Selector ===== */
-.project-selector { position: relative; display: flex; flex-direction: column; gap: 2px; }
-.project-selector-label {
-  font-size: 9px; font-weight: 700; letter-spacing: 1px;
-  color: #4f6280; line-height: 1; padding-left: 2px;
-}
+.project-selector { position: relative; }
 
 .project-trigger {
-  display: flex; align-items: center; gap: 7px;
+  display: flex; align-items: center; gap: 8px;
   padding: 6px 12px; border-radius: var(--radius-sm);
   background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3);
-  color: #a5b4fc; font-size: 13px; font-weight: 600; cursor: pointer;
-  transition: background 0.15s; min-height: 36px;
+  color: #a5b4fc; cursor: pointer;
+  transition: background 0.15s; min-height: 40px;
 }
 .project-trigger:hover { background: rgba(99,102,241,0.22); }
-.project-trigger-icon { font-size: 15px; line-height: 1; }
-.project-trigger-name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.project-trigger-arrow { font-size: 9px; opacity: 0.6; margin-left: 2px; }
+.project-trigger-icon { font-size: 16px; line-height: 1; flex-shrink: 0; }
+.project-trigger-meta { display: flex; flex-direction: column; gap: 1px; text-align: left; }
+.project-trigger-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #6b7aaa; line-height: 1; }
+.project-trigger-name { font-size: 13px; font-weight: 700; color: #c7d2fe; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+.project-trigger-arrow { font-size: 9px; opacity: 0.6; flex-shrink: 0; }
 
 .project-dropdown {
   position: absolute; top: calc(100% + 6px); left: 0;
@@ -125,6 +122,21 @@
   font-size: 10px; color: #64748b; background: rgba(99,102,241,0.08);
   border: 1px solid rgba(99,102,241,0.2); border-radius: 9999px;
   padding: 1px 7px; display: inline-flex; align-items: center; gap: 3px;
+}
+
+/* ===== Due date badge ===== */
+.due-badge {
+  font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 9999px;
+  cursor: pointer; transition: background 0.15s; display: inline-flex; align-items: center; gap: 3px;
+  background: rgba(99,102,241,0.08); color: #94a3b8;
+}
+.due-badge:hover { background: rgba(99,102,241,0.18); color: #a5b4fc; }
+.due-badge--set     { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+.due-badge--overdue { background: rgba(239,68,68,0.15);  color: #f87171; }
+.due-badge--soon    { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.due-input {
+  width: 120px; font-size: 12px; padding: 2px 6px; border-radius: 9999px;
+  background: var(--bg); border: 1px solid var(--accent); color: var(--text); outline: none;
 }
 
 /* ===== Story points on card ===== */
@@ -309,7 +321,7 @@
   background: var(--bg-card); border-radius: var(--radius-sm);
   border: 1px solid var(--border); padding: 10px 12px;
   cursor: grab; transition: box-shadow 0.15s, border-color 0.15s;
-  user-select: none;
+  user-select: none; touch-action: none; /* タッチDnD有効化 */
 }
 .card:hover { border-color: #475569; box-shadow: var(--shadow); }
 .card--overlay { box-shadow: 0 8px 24px rgba(0,0,0,0.5); cursor: grabbing; transform: rotate(2deg); }

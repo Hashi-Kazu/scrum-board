@@ -25,6 +25,7 @@ const fromRow = (r) => ({
   assignee:    r.assignee ?? '',
   storyPoints: r.story_points ?? null,
   sprintId:    r.sprint_id ?? null,
+  dueDate:     r.due_date ?? null,
   position:    r.position,
   completedAt: r.completed_at ?? null,
 })
@@ -135,6 +136,7 @@ export function useTasks(projectId = 'my') {
     if (updates.assignee    !== undefined) row.assignee     = updates.assignee
     if (updates.storyPoints !== undefined) row.story_points = updates.storyPoints
     if (updates.sprintId    !== undefined) row.sprint_id    = updates.sprintId
+    if (updates.dueDate     !== undefined) row.due_date     = updates.dueDate
     if (updates.completedAt !== undefined) row.completed_at = updates.completedAt
     skip.current.add(taskId)
     await supabase.from('tasks').update(row).eq('id', taskId)
