@@ -419,12 +419,18 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); curso
   .app-header-inner {
     flex-wrap: wrap; height: auto; padding: 10px 0; gap: 8px;
   }
-  .app-title-group { flex: 1; min-width: 0; }
+  /* Row1: タイトル + プロジェクト選択（全幅） */
+  .app-title-group { width: 100%; flex-shrink: 0; }
   .app-title { font-size: 15px; }
-  .app-stats { gap: 8px; margin-left: auto; padding-left: 12px; }
-  .progress-bar-wrap { display: none; } /* スペース節約 */
-  .sprint-filter { max-width: 90px; font-size: 12px; padding: 4px 6px; }
+  /* Row2: スプリント選択 + 統計チップ（右寄せ） */
+  .app-stats {
+    order: 5; width: 100%; gap: 8px;
+    justify-content: flex-end;
+  }
+  .progress-bar-wrap { display: none; }
+  .sprint-filter { font-size: 12px; padding: 4px 8px; }
   .stat-chip { font-size: 11px; padding: 2px 7px; }
+  /* Row3: ナビタブ */
   .app-nav {
     order: 10; width: 100%; justify-content: center;
     border-top: 1px solid var(--border); padding-top: 8px;
