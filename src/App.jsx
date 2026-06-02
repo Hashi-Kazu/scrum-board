@@ -3,10 +3,16 @@ import Board from './components/Board'
 import SprintsView from './components/SprintsView'
 import StatsView from './components/StatsView'
 import ProjectSelector from './components/ProjectSelector'
+import LoginScreen from './components/LoginScreen'
 import { useTasks } from './hooks/useTasks'
 import { useSprints } from './hooks/useSprints'
 import { useProjects } from './hooks/useProjects'
 import './App.css'
+
+// 環境変数が設定されている場合のみ認証を要求
+const AUTH_USER = import.meta.env.VITE_AUTH_USER
+const AUTH_PASS = import.meta.env.VITE_AUTH_PASS
+const AUTH_REQUIRED = !!(AUTH_USER && AUTH_PASS)
 
 const COLUMNS = [
   { id: 'backlog',     title: 'プロダクトバックログ', color: '#6b7280' },
@@ -23,6 +29,21 @@ const VIEWS = [
 ]
 
 export default function App() {
+  const [authed, setAuthed] = useState(
+    () => !AUTH_REQUIRED || sessionStorage.getItem('sb-auth') === '1'
+  )
+
+  const handleLogin = (user, pass) => {
+    if (user === AUTH_USER && pass === AUTH_PASS) {
+      sessionStorage.setItem('sb-auth', '1')
+      setAuthed(true)
+      return true
+    }
+    return false
+  }
+
+  if (!authed) return <LoginScreen onLogin={handleLogin} />
+
   const { projects, selectedId, selectedProject, selectProject, addProject, renameProject, deleteProject } = useProjects()
 
   const { tasks, loading, addTask, updateTask, deleteTask, moveTask, reorderTasks } = useTasks(selectedId)
