@@ -9,7 +9,6 @@ import { useSprints } from './hooks/useSprints'
 import { useProjects } from './hooks/useProjects'
 import './App.css'
 
-// 環境変数が設定されている場合のみ認証を要求
 const AUTH_USER = import.meta.env.VITE_AUTH_USER
 const AUTH_PASS = import.meta.env.VITE_AUTH_PASS
 const AUTH_REQUIRED = !!(AUTH_USER && AUTH_PASS)
@@ -28,6 +27,7 @@ const VIEWS = [
   { id: 'sprints', label: '⚙️ スプリント' },
 ]
 
+// ── 認証ラッパー ────────────────────────────────────────────────────────────
 export default function App() {
   const [authed, setAuthed] = useState(
     () => !AUTH_REQUIRED || sessionStorage.getItem('sb-auth') === '1'
@@ -43,23 +43,23 @@ export default function App() {
   }
 
   if (!authed) return <LoginScreen onLogin={handleLogin} />
+  return <BoardApp />
+}
 
-  const { projects, selectedId, selectedProject, selectProject, addProject, renameProject, deleteProject } = useProjects()
-
+// ── ボード本体（hooks はここでのみ呼ぶ）──────────────────────────────────────
+function BoardApp() {
+  const { projects, selectedId, selectProject, addProject, renameProject, deleteProject } = useProjects()
   const { tasks, loading, addTask, updateTask, deleteTask, moveTask, reorderTasks } = useTasks(selectedId)
   const { sprints, addSprint, updateSprint, deleteSprint, activateSprint, completeSprint } = useSprints(selectedId)
 
   const [view, setView] = useState('board')
   const [filterSprintId, setFilterSprintId] = useState('all')
 
-  // ボード表示用タスク
-  // バックログ = スプリント未割り当てのみ / 他カラム = スプリントフィルタに従う
   const boardTasks = tasks.filter(t => {
     if (t.columnId === 'backlog') return !t.sprintId
     return filterSprintId === 'all' || t.sprintId === filterSprintId
   })
 
-  // タスク追加時：バックログ以外 + スプリントフィルタ中 → 自動割り当て
   const handleAddTask = (columnId, taskData) => {
     addTask(columnId, {
       ...taskData,
@@ -69,15 +69,12 @@ export default function App() {
     })
   }
 
-  // ドラッグ移動時のスプリント自動制御
   const handleMoveTask = (taskId, newColumnId) => {
     const task = tasks.find(t => t.id === taskId)
     moveTask(taskId, newColumnId)
     if (newColumnId === 'backlog') {
-      // バックログへ → スプリントから外す
       if (task?.sprintId) updateTask(taskId, { sprintId: null })
     } else if (task?.columnId === 'backlog' && filterSprintId !== 'all' && !task?.sprintId) {
-      // バックログから他カラムへ + スプリントフィルタ中 → 自動割り当て
       updateTask(taskId, { sprintId: filterSprintId })
     }
   }
@@ -92,7 +89,6 @@ export default function App() {
     }
   }
 
-  // スプリント完了：未完了タスクの移動 + velocity 記録
   const handleCompleteSprint = (sprintId, velocity, action, targetSprintId) => {
     tasks
       .filter(t => t.sprintId === sprintId && t.columnId !== 'done')
