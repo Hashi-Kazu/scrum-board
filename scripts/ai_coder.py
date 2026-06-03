@@ -114,13 +114,15 @@ def main() -> None:
 
     client = anthropic.Anthropic()
     print("Sending request to Claude...")
-    message = client.messages.create(
+    raw = ""
+    with client.messages.stream(
         model=MODEL,
         max_tokens=32768,
         messages=[{"role": "user", "content": prompt}],
-    )
-
-    raw = message.content[0].text.strip()
+    ) as stream:
+        for text in stream.text_stream:
+            raw += text
+    raw = raw.strip()
 
     # Strip optional markdown code fences if Claude added them
     if raw.startswith("```"):
