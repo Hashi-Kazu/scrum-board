@@ -116,7 +116,7 @@ def main() -> None:
     print("Sending request to Claude...")
     message = client.messages.create(
         model=MODEL,
-        max_tokens=8192,
+        max_tokens=32768,
         messages=[{"role": "user", "content": prompt}],
     )
 
