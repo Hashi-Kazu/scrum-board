@@ -15,7 +15,7 @@ const AUTH_REQUIRED = !!(AUTH_USER && AUTH_PASS)
 
 const COLUMNS = [
   { id: 'backlog',     title: 'プロダクトバックログ', color: '#6b7280' },
-  { id: 'todo',        title: 'TODO',       color: '#3b82f6' },
+  { id: 'todo',        title: '未着手',       color: '#3b82f6' },
   { id: 'in-progress', title: '進行中',     color: '#f59e0b' },
   { id: 'review',      title: 'レビュー',   color: '#8b5cf6' },
   { id: 'done',        title: '完了',       color: '#10b981' },
