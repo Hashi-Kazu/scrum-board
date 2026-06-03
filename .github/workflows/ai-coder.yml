@@ -47,7 +47,7 @@ jobs:
             exit 0
           fi
           git commit -m "feat: AI-generated changes for issue #${ISSUE_NUMBER}"
-          git push origin "$BRANCH"
+          git push origin "$BRANCH" --force
 
       - name: Create draft PR
         env:
