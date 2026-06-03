@@ -13,7 +13,7 @@ import anthropic
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-MODEL = "claude-sonnet-4-6"
+MODEL = "claude-haiku-4-5-20251001"
 REPO_ROOT = Path(__file__).parent.parent
 
 # Source files Claude is allowed to read and modify (skip large/binary dirs)
