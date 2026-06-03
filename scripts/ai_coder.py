@@ -142,7 +142,9 @@ def main() -> None:
         print("Raw response:", raw[:2000], file=sys.stderr)
         sys.exit(1)
 
-    print(f"\nSummary: {result.get('summary', '(none)')}")
+    summary = result.get("summary", "")
+    print(f"\nSummary: {summary or '(none)'}")
+    (REPO_ROOT / "ai_summary.txt").write_text(summary, encoding="utf-8")
 
     changed_files = result.get("files", [])
     if not changed_files:
