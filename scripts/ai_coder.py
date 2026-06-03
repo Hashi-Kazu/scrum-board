@@ -22,6 +22,7 @@ INCLUDE_EXTENSIONS = {
     ".json", ".sql", ".md", ".yml", ".yaml", ".py",
 }
 EXCLUDE_DIRS = {"node_modules", ".git", "dist", ".vite", ".vite-temp"}
+EXCLUDE_FILES = {"package-lock.json"}
 
 
 def collect_source_files() -> dict[str, str]:
@@ -34,6 +35,8 @@ def collect_source_files() -> dict[str, str]:
         if any(part in EXCLUDE_DIRS for part in path.parts):
             continue
         if path.suffix not in INCLUDE_EXTENSIONS:
+            continue
+        if path.name in EXCLUDE_FILES:
             continue
         rel = path.relative_to(REPO_ROOT).as_posix()
         try:
@@ -90,7 +93,10 @@ def apply_changes(files: list[dict]) -> None:
         content = entry.get("content", "")
         if not rel_path:
             continue
-        target = REPO_ROOT / rel_path
+        target = (REPO_ROOT / rel_path).resolve()
+        if not str(target).startswith(str(REPO_ROOT.resolve())):
+            print(f"  SKIPPED (path outside repo): {rel_path}", file=sys.stderr)
+            continue
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
         print(f"  wrote: {rel_path}")
