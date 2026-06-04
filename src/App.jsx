@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Board from './components/Board'
 import SprintsView from './components/SprintsView'
 import StatsView from './components/StatsView'
@@ -54,6 +54,12 @@ function BoardApp() {
 
   const [view, setView] = useState('board')
   const [filterSprintId, setFilterSprintId] = useState('all')
+
+  // Auto-select active sprint on load or when sprints change
+  useEffect(() => {
+    const activeSprint = sprints.find(s => s.status === 'active')
+    setFilterSprintId(activeSprint ? activeSprint.id : 'all')
+  }, [sprints])
 
   const boardTasks = tasks.filter(t => {
     if (t.columnId === 'backlog') return !t.sprintId
