@@ -68,7 +68,7 @@ export default function Card({ task, columnId, sprints, onUpdate, onDelete, isOv
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : 1,
+    opacity: isDragging ? 0.4 : task.columnId === 'done' ? 0.6 : 1,
   }
 
   const meta = PRIORITY_META[task.priority] ?? PRIORITY_META.medium
