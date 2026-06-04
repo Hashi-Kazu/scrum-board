@@ -126,7 +126,9 @@ def main() -> None:
         timeout=300,
     )
     if result.returncode != 0:
-        print(f"ERROR: claude CLI failed:\n{result.stderr}", file=sys.stderr)
+        print(f"ERROR: claude CLI failed (exit {result.returncode})", file=sys.stderr)
+        print(f"stdout: {result.stdout[:2000]}", file=sys.stderr)
+        print(f"stderr: {result.stderr[:2000]}", file=sys.stderr)
         sys.exit(1)
     raw = result.stdout.strip()
 
