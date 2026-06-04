@@ -5,10 +5,9 @@ and writes back any file modifications Claude proposes.
 
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
-
-import anthropic
 
 # ---------------------------------------------------------------------------
 # Config
@@ -118,17 +117,18 @@ def main() -> None:
 
     prompt = build_prompt(issue_number, issue_title, issue_body, source_files)
 
-    client = anthropic.Anthropic()
-    print("Sending request to Claude...")
-    raw = ""
-    with client.messages.stream(
-        model=MODEL,
-        max_tokens=32768,
-        messages=[{"role": "user", "content": prompt}],
-    ) as stream:
-        for text in stream.text_stream:
-            raw += text
-    raw = raw.strip()
+    print("Sending request to Claude via Claude Code CLI...")
+    result = subprocess.run(
+        ["claude", "--print", "--model", MODEL],
+        input=prompt,
+        capture_output=True,
+        text=True,
+        timeout=300,
+    )
+    if result.returncode != 0:
+        print(f"ERROR: claude CLI failed:\n{result.stderr}", file=sys.stderr)
+        sys.exit(1)
+    raw = result.stdout.strip()
 
     # Strip optional markdown code fences if Claude added them
     if raw.startswith("```"):
