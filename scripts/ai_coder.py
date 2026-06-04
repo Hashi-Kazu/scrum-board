@@ -5,9 +5,11 @@ and writes back any file modifications Claude proposes.
 
 import json
 import os
-import subprocess
+import re
 import sys
 from pathlib import Path
+
+import anthropic
 
 # ---------------------------------------------------------------------------
 # Config
@@ -15,7 +17,6 @@ from pathlib import Path
 MODEL = "claude-sonnet-4-6"
 REPO_ROOT = Path(__file__).parent.parent
 
-# Source files Claude is allowed to read and modify (skip large/binary dirs)
 INCLUDE_EXTENSIONS = {
     ".jsx", ".js", ".ts", ".tsx", ".css", ".html",
     ".json", ".sql", ".md", ".yml", ".yaml", ".py",
@@ -30,7 +31,6 @@ def collect_source_files() -> dict[str, str]:
     for path in sorted(REPO_ROOT.rglob("*")):
         if path.is_dir():
             continue
-        # Skip excluded directories
         if any(part in EXCLUDE_DIRS for part in path.parts):
             continue
         if path.suffix not in INCLUDE_EXTENSIONS:
@@ -117,44 +117,36 @@ def main() -> None:
 
     prompt = build_prompt(issue_number, issue_title, issue_body, source_files)
 
-    print("Sending request to Claude via Claude Code CLI...")
-    result = subprocess.run(
-        ["claude", "--print", "--model", MODEL, "--allowedTools", ""],
-        input=prompt,
-        capture_output=True,
-        text=True,
-        timeout=300,
+    print("Sending request to Claude via Anthropic SDK...")
+    client = anthropic.Anthropic()
+    message = client.messages.create(
+        model=MODEL,
+        max_tokens=8192,
+        messages=[{"role": "user", "content": prompt}],
     )
-    if result.returncode != 0:
-        print(f"ERROR: claude CLI failed (exit {result.returncode})", file=sys.stderr)
-        print(f"stdout: {result.stdout[:2000]}", file=sys.stderr)
-        print(f"stderr: {result.stderr[:2000]}", file=sys.stderr)
-        sys.exit(1)
-    raw = result.stdout.strip()
+    raw = message.content[0].text.strip()
 
     # Extract JSON: handle preamble text + ```json ... ``` or bare JSON object
-    import re
     fence_match = re.search(r"```(?:json)?\s*\n([\s\S]*?)\n```", raw)
     if fence_match:
         raw = fence_match.group(1).strip()
     else:
-        # Fall back to finding the first { ... } block
         brace_match = re.search(r"\{[\s\S]*\}", raw)
         if brace_match:
             raw = brace_match.group(0)
 
     try:
-        result = json.loads(raw)
+        response = json.loads(raw)
     except json.JSONDecodeError as exc:
         print(f"ERROR: Claude response is not valid JSON: {exc}", file=sys.stderr)
-        print("Raw response:", result.stdout[:2000], file=sys.stderr)
+        print("Raw response:", message.content[0].text[:2000], file=sys.stderr)
         sys.exit(1)
 
-    summary = result.get("summary", "")
+    summary = response.get("summary", "")
     print(f"\nSummary: {summary or '(none)'}")
     (REPO_ROOT / "ai_summary.txt").write_text(summary, encoding="utf-8")
 
-    changed_files = result.get("files", [])
+    changed_files = response.get("files", [])
     if not changed_files:
         print("No file changes proposed by Claude.")
         return
