@@ -19,10 +19,11 @@ REPO_ROOT = Path(__file__).parent.parent
 
 INCLUDE_EXTENSIONS = {
     ".jsx", ".js", ".ts", ".tsx", ".css", ".html",
-    ".json", ".sql", ".md", ".yml", ".yaml", ".py",
 }
-EXCLUDE_DIRS = {"node_modules", ".git", "dist", ".vite", ".vite-temp"}
+EXCLUDE_DIRS = {"node_modules", ".git", "dist", ".vite", ".vite-temp", "scripts"}
 EXCLUDE_FILES = {"package-lock.json"}
+MAX_FILE_CHARS = 8000
+MAX_TOTAL_CHARS = 80000
 
 
 def collect_source_files() -> dict[str, str]:
@@ -39,10 +40,20 @@ def collect_source_files() -> dict[str, str]:
             continue
         rel = path.relative_to(REPO_ROOT).as_posix()
         try:
-            files[rel] = path.read_text(encoding="utf-8", errors="replace")
+            content = path.read_text(encoding="utf-8", errors="replace")
+            if len(content) > MAX_FILE_CHARS:
+                content = content[:MAX_FILE_CHARS] + "\n... (truncated)"
+            files[rel] = content
         except Exception:
             pass
-    return files
+    total = 0
+    trimmed: dict[str, str] = {}
+    for k, v in files.items():
+        if total + len(v) > MAX_TOTAL_CHARS:
+            break
+        trimmed[k] = v
+        total += len(v)
+    return trimmed
 
 
 def build_prompt(issue_number: str, issue_title: str, issue_body: str,
@@ -126,8 +137,12 @@ def main() -> None:
 
     print("Sending request to Claude via Claude Code CLI...")
     result = subprocess.run(
-        ["claude", "--print", "--model", MODEL, "--system-prompt", system_prompt],
-        input=prompt,
+        [
+            "claude", "--print", "--dangerously-skip-permissions",
+            "--model", MODEL,
+            "--system-prompt", system_prompt,
+            prompt,
+        ],
         capture_output=True,
         text=True,
         timeout=300,
