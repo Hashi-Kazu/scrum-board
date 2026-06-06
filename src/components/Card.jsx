@@ -12,7 +12,7 @@ const PRIORITY_META = {
 const AVATAR_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899']
 const avatarColor = (name) => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
 
-export default function Card({ task, columnId, sprints, onUpdate, onDelete, isOverlay }) {
+export default function Card({ task, columnId, sprints, assignees, onUpdate, onDelete, isOverlay }) {
   const [showModal, setShowModal] = useState(false)
   const [editingSP,  setEditingSP]  = useState(false)
   const [spVal,      setSpVal]      = useState('')
@@ -169,6 +169,7 @@ export default function Card({ task, columnId, sprints, onUpdate, onDelete, isOv
         <CardModal
           task={task}
           sprints={sprints}
+          assignees={assignees}
           onSave={(updates) => { onUpdate(task.id, updates); setShowModal(false) }}
           onDelete={() => { onDelete(task.id); setShowModal(false) }}
           onClose={() => setShowModal(false)}

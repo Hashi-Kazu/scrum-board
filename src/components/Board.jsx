@@ -11,7 +11,7 @@ import {
 import Column from './Column'
 import Card from './Card'
 
-export default function Board({ columns, tasks, sprints, onAddTask, onUpdateTask, onDeleteTask, onMoveTask, onReorderTasks }) {
+export default function Board({ columns, tasks, sprints, assignees, defaultAssignee, onAddTask, onUpdateTask, onDeleteTask, onMoveTask, onReorderTasks }) {
   const [activeTask, setActiveTask] = useState(null)
 
   const sensors = useSensors(
@@ -62,6 +62,8 @@ export default function Board({ columns, tasks, sprints, onAddTask, onUpdateTask
             column={col}
             tasks={tasks.filter(t => t.columnId === col.id)}
             sprints={sprints}
+            assignees={assignees}
+            defaultAssignee={defaultAssignee}
             onAddTask={onAddTask}
             onUpdateTask={onUpdateTask}
             onDeleteTask={onDeleteTask}

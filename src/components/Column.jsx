@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import Card from './Card'
 import AddCardForm from './AddCardForm'
 
-export default function Column({ column, tasks, sprints, onAddTask, onUpdateTask, onDeleteTask }) {
+export default function Column({ column, tasks, sprints, assignees, defaultAssignee, onAddTask, onUpdateTask, onDeleteTask }) {
   const [showForm, setShowForm] = useState(false)
 
   const { setNodeRef, isOver } = useDroppable({
@@ -42,6 +42,7 @@ export default function Column({ column, tasks, sprints, onAddTask, onUpdateTask
               task={task}
               columnId={column.id}
               sprints={sprints}
+              assignees={assignees}
               onUpdate={onUpdateTask}
               onDelete={onDeleteTask}
             />
@@ -53,7 +54,7 @@ export default function Column({ column, tasks, sprints, onAddTask, onUpdateTask
         )}
 
         {showForm ? (
-          <AddCardForm onAdd={handleAdd} onCancel={() => setShowForm(false)} />
+          <AddCardForm onAdd={handleAdd} onCancel={() => setShowForm(false)} assignees={assignees} defaultAssignee={defaultAssignee} />
         ) : (
           <button className="add-card-btn" onClick={() => setShowForm(true)}>
             + タスクを追加

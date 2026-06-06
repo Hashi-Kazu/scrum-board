@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-export default function CardModal({ task, sprints = [], onSave, onDelete, onClose }) {
+export default function CardModal({ task, sprints = [], assignees = [], onSave, onDelete, onClose }) {
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description ?? '')
   const [priority, setPriority] = useState(task.priority)
@@ -65,7 +65,14 @@ export default function CardModal({ task, sprints = [], onSave, onDelete, onClos
             </div>
             <div style={{ flex: 1 }}>
               <label className="form-label">担当者</label>
-              <input className="form-input" value={assignee} onChange={e => setAssignee(e.target.value)} placeholder="名前" />
+              {assignees.length > 0 ? (
+                <select className="form-input form-select" value={assignee} onChange={e => setAssignee(e.target.value)}>
+                  <option value="">未設定</option>
+                  {assignees.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+                </select>
+              ) : (
+                <input className="form-input" value={assignee} onChange={e => setAssignee(e.target.value)} placeholder="名前" />
+              )}
             </div>
           </div>
           <div className="form-row">

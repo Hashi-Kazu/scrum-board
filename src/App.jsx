@@ -4,9 +4,11 @@ import SprintsView from './components/SprintsView'
 import StatsView from './components/StatsView'
 import ProjectSelector from './components/ProjectSelector'
 import LoginScreen from './components/LoginScreen'
+import AssigneesModal from './components/AssigneesModal'
 import { useTasks } from './hooks/useTasks'
 import { useSprints } from './hooks/useSprints'
 import { useProjects } from './hooks/useProjects'
+import { useAssignees } from './hooks/useAssignees'
 import './App.css'
 
 const AUTH_USER = import.meta.env.VITE_AUTH_USER
@@ -51,9 +53,11 @@ function BoardApp() {
   const { projects, selectedId, selectProject, addProject, renameProject, deleteProject } = useProjects()
   const { tasks, loading, addTask, updateTask, deleteTask, moveTask, reorderTasks } = useTasks(selectedId)
   const { sprints, addSprint, updateSprint, deleteSprint, activateSprint, completeSprint } = useSprints(selectedId)
+  const { assignees, defaultAssignee, addAssignee, renameAssignee, deleteAssignee, setDefaultAssignee, clearDefault } = useAssignees(selectedId)
 
   const [view, setView] = useState('board')
   const [filterSprintId, setFilterSprintId] = useState('all')
+  const [showAssignees, setShowAssignees] = useState(false)
 
   // Auto-select active sprint on load or when sprints change
   useEffect(() => {
@@ -121,6 +125,7 @@ function BoardApp() {
               onAdd={addProject}
               onRename={renameProject}
               onDelete={deleteProject}
+              onManageAssignees={() => setShowAssignees(true)}
             />
           </div>
 
@@ -169,6 +174,8 @@ function BoardApp() {
               columns={COLUMNS}
               tasks={boardTasks}
               sprints={sprints}
+              assignees={assignees}
+              defaultAssignee={defaultAssignee}
               onAddTask={handleAddTask}
               onUpdateTask={updateTask}
               onDeleteTask={deleteTask}
@@ -191,6 +198,18 @@ function BoardApp() {
             />
           )}
         </main>
+      )}
+      {showAssignees && (
+        <AssigneesModal
+          assignees={assignees}
+          defaultAssignee={defaultAssignee}
+          onAdd={addAssignee}
+          onRename={renameAssignee}
+          onDelete={deleteAssignee}
+          onSetDefault={setDefaultAssignee}
+          onClearDefault={clearDefault}
+          onClose={() => setShowAssignees(false)}
+        />
       )}
     </div>
   )

@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-export default function AddCardForm({ onAdd, onCancel }) {
+export default function AddCardForm({ onAdd, onCancel, assignees = [], defaultAssignee = null }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState('medium')
-  const [assignee, setAssignee] = useState('')
+  const [assignee, setAssignee] = useState(defaultAssignee?.name ?? '')
   const [storyPoints, setStoryPoints] = useState('')
 
   const handleSubmit = (e) => {
@@ -14,7 +14,7 @@ export default function AddCardForm({ onAdd, onCancel }) {
       title: title.trim(),
       description: description.trim(),
       priority,
-      assignee: assignee.trim(),
+      assignee,
       storyPoints: storyPoints !== '' ? Number(storyPoints) : null,
     })
   }
@@ -41,12 +41,19 @@ export default function AddCardForm({ onAdd, onCancel }) {
           <option value="medium">優先度: 中</option>
           <option value="low">優先度: 低</option>
         </select>
-        <input
-          className="form-input"
-          placeholder="担当者"
-          value={assignee}
-          onChange={e => setAssignee(e.target.value)}
-        />
+        {assignees.length > 0 ? (
+          <select className="form-input form-select" value={assignee} onChange={e => setAssignee(e.target.value)}>
+            <option value="">担当者: 未設定</option>
+            {assignees.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+          </select>
+        ) : (
+          <input
+            className="form-input"
+            placeholder="担当者"
+            value={assignee}
+            onChange={e => setAssignee(e.target.value)}
+          />
+        )}
       </div>
       <input
         className="form-input"

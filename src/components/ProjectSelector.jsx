@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 
-export default function ProjectSelector({ projects, selectedId, onSelect, onAdd, onRename, onDelete }) {
+export default function ProjectSelector({ projects, selectedId, onSelect, onAdd, onRename, onDelete, onManageAssignees }) {
   const [open, setOpen]         = useState(false)
   const [adding, setAdding]     = useState(false)
   const [newName, setNewName]   = useState('')
@@ -116,6 +116,10 @@ export default function ProjectSelector({ projects, selectedId, onSelect, onAdd,
               ＋ 新しいプロジェクト
             </button>
           )}
+          <div className="project-divider" />
+          <button className="project-add-btn" onClick={() => { setOpen(false); onManageAssignees?.() }}>
+            👥 担当者を管理
+          </button>
         </div>
       )}
     </div>
