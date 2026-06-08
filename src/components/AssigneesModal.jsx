@@ -28,7 +28,7 @@ export default function AssigneesModal({ assignees, defaultAssignee, onAdd, onRe
   }
 
   const handleDelete = (a) => {
-    if (window.confirm(`「${a.name}」を削除しますか？\nタスクの担当者名はそのまま残ります。`)) {
+    if (window.confirm(`「${a.name}」を削除しますか？\nこの担当者が設定されているタスクは未設定になります。`)) {
       onDelete(a.id)
     }
   }
@@ -99,7 +99,7 @@ export default function AssigneesModal({ assignees, defaultAssignee, onAdd, onRe
                 )}
                 <div className="assignee-row-actions">
                   <button className="project-action-btn" onClick={() => { setEditingId(a.id); setEditName(a.name) }} title="名前を変更">✏️</button>
-                  <button className="project-action-btn" onClick={() => handleDelete(a)} title="削除">🗑</button>
+                  <button className="project-action-btn project-action-btn--danger" onClick={() => handleDelete(a)} title="削除">🗑</button>
                 </div>
               </div>
             ))}

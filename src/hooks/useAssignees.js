@@ -58,9 +58,13 @@ export function useAssignees(projectId = 'my') {
   }, [])
 
   const deleteAssignee = useCallback(async (id) => {
+    const name = assignees.find(a => a.id === id)?.name
     setAssignees(p => p.filter(a => a.id !== id))
     await supabase.from('assignees').delete().eq('id', id)
-  }, [])
+    if (name) {
+      await supabase.from('tasks').update({ assignee: '' }).eq('board_id', projectId).eq('assignee', name)
+    }
+  }, [assignees, projectId])
 
   // デフォルト担当者を設定（null を渡すと未設定に戻す）
   const setDefaultAssignee = useCallback(async (id) => {
