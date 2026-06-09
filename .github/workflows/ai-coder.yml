@@ -1,56 +1,56 @@
 name: AI Coder
 
 on:
-  issues:
-    types: [labeled]
+ issues:
+   types: [labeled]
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-  id-token: write
+ contents: write
+ pull-requests: write
+ issues: write
+ id-token: write
 
 jobs:
-  ai-code:
-    if: github.event.label.name == 'ai-task'
-    runs-on: ubuntu-latest
+ ai-code:
+   if: github.event.label.name == 'ai-task'
+   runs-on: ubuntu-latest
 
-    steps:
-      - uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
-            あなたは scrum-board（React + Vite + Supabase のスクラムかんばんボード）の開発エージェントです。
+   steps:
+     - uses: anthropics/claude-code-action@v1
+       with:
+         claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+         github_token: ${{ secrets.GITHUB_TOKEN }}
+         prompt: |
+           あなたは scrum-board（React + Vite + Supabase のスクラムかんばんボード）の開発エージェントです。
 
-            以下の Issue を実装・修正してください。
+           以下の Issue を実装・修正してください。
 
-            Issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}
+           Issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}
 
-            Issue 本文:
-            ${{ github.event.issue.body }}
+           Issue 本文:
+           ${{ github.event.issue.body }}
 
-            ## 作業手順
+           ## 作業手順
 
-            1. リポジトリのコードを読んで現状を把握する
-            2. Issue の要求を実装・修正する
-               - ソースコードは `src/` 以下（JSX、TypeScript なし）
-               - コンポーネントは `src/components/`
-               - Supabase 通信ロジックは `src/hooks/`
-               - エントリポイントは `src/App.jsx`
-            3. `feature/issue-${{ github.event.issue.number }}` ブランチを作成して変更をコミットする
-               - コミットメッセージは日本語で簡潔に（例: `feat: ○○機能を追加 (#${{ github.event.issue.number }})`）
-            4. main ブランチへの draft PR を作成する
-               - PR タイトル: `feat: ${{ github.event.issue.title }}`
-               - PR 本文に変更内容のサマリーと `Closes #${{ github.event.issue.number }}` を含める
+           1. リポジトリのコードを読んで現状を把握する
+           2. Issue の要求を実装・修正する
+              - ソースコードは `src/` 以下（JSX、TypeScript なし）
+              - コンポーネントは `src/components/`
+              - Supabase 通信ロジックは `src/hooks/`
+              - エントリポイントは `src/App.jsx`
+           3. `feature/issue-${{ github.event.issue.number }}` ブランチを作成して変更をコミットする
+              - コミットメッセージは日本語で簡潔に（例: `feat: ○○機能を追加 (#${{ github.event.issue.number }})`）
+           4. main ブランチへの draft PR を作成する
+              - PR タイトル: `feat: ${{ github.event.issue.title }}`
+              - PR 本文に変更内容のサマリーと `Closes #${{ github.event.issue.number }}` を含める
 
-            ## 注意事項
+           ## 注意事項
 
-            - データはすべて Supabase に保存。`localStorage` は使わない
-            - Supabase 通信は必ず `src/hooks/` のカスタムフック経由で行う（コンポーネントから直接呼ばない）
-            - `CLAUDE.md` はコード構成・規約の参照用として読んでよいが、編集しない
-            - CLAUDE.md に「feature-dev エージェントを通して行うこと」と書かれているが、この Actions 環境ではサブエージェントは使えないため**その指示だけ無視して直接ファイルを編集して実装すること**
-            - コメントは WHY が非自明な場合のみ書く
-            - バージョンバンプ（package.json の version）は変更しない（後工程で行う）
-          claude_args: |
-            --max-turns 50
+           - データはすべて Supabase に保存。`localStorage` は使わない
+           - Supabase 通信は必ず `src/hooks/` のカスタムフック経由で行う（コンポーネントから直接呼ばない）
+           - `CLAUDE.md` はコード構成・規約の参照用として読んでよいが、編集しない
+           - コメントは WHY が非自明な場合のみ書く
+           - バージョンバンプ（package.json の version）は変更しない（後工程で行う）
+         claude_args: |
+           --max-turns 50
+           --dangerously-skip-permissions
