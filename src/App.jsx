@@ -38,7 +38,8 @@ export default function App() {
   const handleLogin = (user, pass) => {
     if (user === AUTH_USER && pass === AUTH_PASS) {
       sessionStorage.setItem('sb-auth', '1')
-      setAuthed(true)
+      // リロードすることでブラウザにログイン成功を認識させ、パスワード保存ダイアログを表示させる
+      window.location.href = window.location.href
       return true
     }
     return false
