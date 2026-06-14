@@ -20,6 +20,7 @@ jobs:
        with:
          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
          github_token: ${{ secrets.GITHUB_TOKEN }}
+         show_full_output: true
          prompt: |
            あなたは scrum-board（React + Vite + Supabase のスクラムかんばんボード）の開発エージェントです。
 
@@ -51,5 +52,5 @@ jobs:
            - `CLAUDE.md` はコード構成・規約の参照用として読み、エージェント定義（`.claude/agents/`）に従って実装すること
            - コメントは WHY が非自明な場合のみ書く
          claude_args: |
-           --max-turns 50
+           --max-turns 100
            --dangerously-skip-permissions
