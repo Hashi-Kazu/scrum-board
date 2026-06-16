@@ -66,9 +66,10 @@ VITE_AUTH_PASS=（任意）
 **コード修正・機能追加・バグ修正など、あらゆる開発タスクは必ず `feature-dev` エージェントを通して行うこと。**
 
 - `feature-dev` がコード修正・仕様書更新・バージョンバンプを一括で行う
-- バグ調査が必要な場合は `feature-dev` が `debugger` を呼ぶ
-- 開発完了後、「ビルドしてプッシュして」で `publisher` を呼ぶ
+- バグ調査が必要な場合は `debugger` を呼ぶ（親が起動する。サブエージェントは他エージェントを起動できないため、`feature-dev` は「debugger 必要」と報告するだけ）
+- 開発完了後、「プッシュして」で `publisher` を呼ぶ
 - バージョンポリシー: 要件変更あり → マイナーアップ / コード修正のみ → パッチアップ
+- 検証は `npm run lint`（ESLint）と `npm run build`。画面に出る変更は dev サーバー（localhost:5173）でブラウザ確認する
 
 ## エージェント一覧
 
@@ -76,7 +77,9 @@ VITE_AUTH_PASS=（任意）
 |---|---|
 | `feature-dev` | 開発全部（コード・仕様書・バージョン） |
 | `debugger` | バグ調査のみ（読み取り専用） |
-| `publisher` | git push |
+| `publisher` | git push（このアプリはプラグインではなく**自動公開なし**。push＝リモート反映まで） |
+
+> **エージェント定義の管理**: `.claude/agents/*.md` は `C:\Claude Code\_agent-templates`（正本）から同期されたコピー。**直接編集せず**、正本を編集して `_agent-templates\sync-agents.ps1` を実行すること（直接編集は次回同期で上書きされる）。プロジェクト固有の事情はエージェントではなくこの CLAUDE.md に書く。
 
 ## 注意事項
 
