@@ -3,6 +3,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import Card from './Card'
 import AddCardForm from './AddCardForm'
+import { sumStoryPoints } from '../lib/taskLogic'
 
 export default function Column({ column, tasks, sprints, assignees, defaultAssignee, onAddTask, onUpdateTask, onDeleteTask }) {
   const [showForm, setShowForm] = useState(false)
@@ -17,7 +18,7 @@ export default function Column({ column, tasks, sprints, assignees, defaultAssig
     setShowForm(false)
   }
 
-  const totalPt = tasks.reduce((s, t) => s + (t.storyPoints ?? 0), 0)
+  const totalPt = sumStoryPoints(tasks)
 
   return (
     <div className={`column ${isOver ? 'column--over' : ''}`}>

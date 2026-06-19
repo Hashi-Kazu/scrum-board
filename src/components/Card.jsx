@@ -2,15 +2,7 @@ import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import CardModal from './CardModal'
-
-const PRIORITY_META = {
-  high:   { label: '高', className: 'priority--high' },
-  medium: { label: '中', className: 'priority--medium' },
-  low:    { label: '低', className: 'priority--low' },
-}
-
-const AVATAR_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899']
-const avatarColor = (name) => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
+import { priorityMeta, avatarColor, formatDue, dueBadgeClass as computeDueBadgeClass, normalizeStoryPoints } from '../lib/taskLogic'
 
 export default function Card({ task, columnId, sprints, assignees, onUpdate, onDelete, isOverlay }) {
   const [showModal, setShowModal] = useState(false)
@@ -21,21 +13,7 @@ export default function Card({ task, columnId, sprints, assignees, onUpdate, onD
 
   const sprint = sprints?.find(s => s.id === task.sprintId)
 
-  // 期限の表示フォーマット
-  const formatDue = (d) => {
-    if (!d) return null
-    const dt = new Date(d + 'T00:00:00')
-    return `${dt.getMonth() + 1}/${dt.getDate()}`
-  }
-  const dueBadgeClass = () => {
-    if (!task.dueDate || task.columnId === 'done') return 'due-badge--set'
-    const today = new Date(); today.setHours(0,0,0,0)
-    const due   = new Date(task.dueDate + 'T00:00:00')
-    if (due < today) return 'due-badge--overdue'
-    const diff = (due - today) / 86400000
-    if (diff <= 2) return 'due-badge--soon'
-    return 'due-badge--set'
-  }
+  const dueBadgeClass = () => computeDueBadgeClass(task)
 
   const startEditDue = (e) => {
     e.stopPropagation()
@@ -54,9 +32,7 @@ export default function Card({ task, columnId, sprints, assignees, onUpdate, onD
   }
   const commitSP = () => {
     setEditingSP(false)
-    const n = spVal.trim()
-    const val = n === '' ? null : Math.max(1, parseInt(n, 10)) || null
-    onUpdate(task.id, { storyPoints: val })
+    onUpdate(task.id, { storyPoints: normalizeStoryPoints(spVal) })
   }
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -71,7 +47,7 @@ export default function Card({ task, columnId, sprints, assignees, onUpdate, onD
     opacity: isDragging ? 0.4 : 1,
   }
 
-  const meta = PRIORITY_META[task.priority] ?? PRIORITY_META.medium
+  const meta = priorityMeta(task.priority)
 
   return (
     <>

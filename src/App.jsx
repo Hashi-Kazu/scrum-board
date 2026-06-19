@@ -9,6 +9,7 @@ import { useTasks } from './hooks/useTasks'
 import { useSprints } from './hooks/useSprints'
 import { useProjects } from './hooks/useProjects'
 import { useAssignees } from './hooks/useAssignees'
+import { boardTasksFor, progressTasksFor, computeProgress, autoSelectedSprintId } from './lib/taskLogic'
 import './App.css'
 
 const AUTH_USER = import.meta.env.VITE_AUTH_USER
@@ -66,15 +67,11 @@ function BoardApp() {
 
   // Auto-select active sprint on load or when sprints change
   useEffect(() => {
-    const activeSprint = sprints.find(s => s.status === 'active')
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFilterSprintId(activeSprint ? activeSprint.id : 'all')
+    setFilterSprintId(autoSelectedSprintId(sprints))
   }, [sprints])
 
-  const boardTasks = tasks.filter(t => {
-    if (t.columnId === 'backlog') return !t.sprintId
-    return filterSprintId === 'all' || t.sprintId === filterSprintId
-  })
+  const boardTasks = boardTasksFor(tasks, filterSprintId)
 
   const handleAddTask = (columnId, taskData) => {
     addTask(columnId, {
@@ -115,11 +112,8 @@ function BoardApp() {
     completeSprint(sprintId, velocity)
   }
 
-  const progressTasks = filterSprintId === 'all'
-    ? tasks
-    : tasks.filter(t => t.sprintId === filterSprintId)
-  const totalDone = progressTasks.filter(t => t.columnId === 'done').length
-  const progress  = progressTasks.length > 0 ? Math.round((totalDone / progressTasks.length) * 100) : 0
+  const progressTasks = progressTasksFor(tasks, filterSprintId)
+  const { done: totalDone, percent: progress } = computeProgress(progressTasks)
 
   return (
     <div className="app">

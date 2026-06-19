@@ -1,4 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
+import { averageVelocity } from '../lib/taskLogic'
 
 export default function VelocityChart({ sprints }) {
   const completed = sprints.filter(s => s.status === 'completed' && s.velocity !== null)
@@ -8,7 +9,7 @@ export default function VelocityChart({ sprints }) {
   }
 
   const data = completed.map(s => ({ name: s.name, velocity: s.velocity }))
-  const avg  = Math.round(data.reduce((s, d) => s + d.velocity, 0) / data.length)
+  const avg  = averageVelocity(completed)
 
   return (
     <div className="chart-wrap">

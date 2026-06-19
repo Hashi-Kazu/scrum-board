@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
-
-const AVATAR_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899']
-const avatarColor = (name) => AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AVATAR_COLORS.length]
+import { avatarColor } from '../lib/taskLogic'
 
 export default function AssigneesModal({ assignees, defaultAssignee, onAdd, onRename, onDelete, onSetDefault, onClearDefault, onClose }) {
   const [newName, setNewName]     = useState('')
