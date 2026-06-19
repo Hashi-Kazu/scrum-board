@@ -35,6 +35,7 @@ function readLocal() {
   try {
     const raw = localStorage.getItem(SPRINTS_KEY)
     if (raw) return JSON.parse(raw)
+  // eslint-disable-next-line no-empty
   } catch {}
   return DEFAULT_SPRINTS
 }
@@ -46,6 +47,7 @@ export function useSprints(projectId = 'my') {
 
   useEffect(() => {
     let mounted = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSprints([])
 
     const init = async () => {

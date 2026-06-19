@@ -31,7 +31,7 @@ const VIEWS = [
 
 // ── 認証ラッパー ────────────────────────────────────────────────────────────
 export default function App() {
-  const [authed, setAuthed] = useState(
+  const [authed] = useState(
     () => !AUTH_REQUIRED || sessionStorage.getItem('sb-auth') === '1'
   )
 
@@ -43,7 +43,7 @@ export default function App() {
         navigator.credentials.store(cred)
       }
       // リロードすることでブラウザにログイン成功を認識させ、パスワード保存ダイアログを表示させる
-      window.location.href = window.location.href
+      window.location.reload()
       return true
     }
     return false
@@ -67,6 +67,7 @@ function BoardApp() {
   // Auto-select active sprint on load or when sprints change
   useEffect(() => {
     const activeSprint = sprints.find(s => s.status === 'active')
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilterSprintId(activeSprint ? activeSprint.id : 'all')
   }, [sprints])
 
@@ -114,8 +115,11 @@ function BoardApp() {
     completeSprint(sprintId, velocity)
   }
 
-  const totalDone = boardTasks.filter(t => t.columnId === 'done').length
-  const progress  = boardTasks.length > 0 ? Math.round((totalDone / boardTasks.length) * 100) : 0
+  const progressTasks = filterSprintId === 'all'
+    ? tasks.filter(t => t.columnId !== 'backlog')
+    : tasks.filter(t => t.sprintId === filterSprintId)
+  const totalDone = progressTasks.filter(t => t.columnId === 'done').length
+  const progress  = progressTasks.length > 0 ? Math.round((totalDone / progressTasks.length) * 100) : 0
 
   return (
     <div className="app">
@@ -165,7 +169,7 @@ function BoardApp() {
               </div>
               <span className="progress-label">{progress}%</span>
             </div>
-            <span className="stat-chip done">{totalDone}/{boardTasks.length}</span>
+            <span className="stat-chip done">{totalDone}/{progressTasks.length}</span>
           </div>
         </div>
       </header>

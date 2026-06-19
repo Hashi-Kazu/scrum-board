@@ -7,6 +7,7 @@ export function useAssignees(projectId = 'my') {
 
   useEffect(() => {
     let mounted = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAssignees([])
 
     const load = async () => {

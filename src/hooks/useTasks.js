@@ -48,6 +48,7 @@ function readLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return JSON.parse(raw)
+  // eslint-disable-next-line no-empty
   } catch {}
   return DEFAULT_TASKS
 }
@@ -61,6 +62,7 @@ export function useTasks(projectId = 'my') {
 
   useEffect(() => {
     let mounted = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTasks([])
     setLoading(true)
 
