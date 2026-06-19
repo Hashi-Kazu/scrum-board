@@ -116,7 +116,7 @@ function BoardApp() {
   }
 
   const progressTasks = filterSprintId === 'all'
-    ? tasks.filter(t => t.columnId !== 'backlog')
+    ? tasks
     : tasks.filter(t => t.sprintId === filterSprintId)
   const totalDone = progressTasks.filter(t => t.columnId === 'done').length
   const progress  = progressTasks.length > 0 ? Math.round((totalDone / progressTasks.length) * 100) : 0
