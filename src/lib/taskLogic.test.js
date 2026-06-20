@@ -190,6 +190,74 @@ describe('boardTasksFor (S-004-07, S-011-08,09)', () => {
   })
 })
 
+// R-009 progressTasksFor 追加ケース
+describe('progressTasksFor 追加 (S-009-03)', () => {
+  const tasks = [
+    { id: 1, sprintId: 'a' },
+    { id: 2, sprintId: null },
+  ]
+  it('null の sprintId を持つタスクは "all" のとき含まれる', () => {
+    const result = progressTasksFor(tasks, 'all')
+    expect(result.find(t => t.id === 2)).toBeTruthy()
+  })
+  it('スプリントフィルタ中に sprintId=null のタスクは除外される', () => {
+    const result = progressTasksFor(tasks, 'a')
+    expect(result.find(t => t.id === 2)).toBeFalsy()
+  })
+})
+
+// R-004 boardTasksFor 追加ケース
+describe('boardTasksFor 追加 (S-004-07)', () => {
+  const tasks = [
+    { id: 1, columnId: 'backlog', sprintId: null },
+    { id: 2, columnId: 'backlog', sprintId: 'a' },
+    { id: 3, columnId: 'todo', sprintId: 'a' },
+    { id: 4, columnId: 'todo', sprintId: 'b' },
+  ]
+  it('"all" フィルタでは backlog 以外の全タスクも含まれる（id=3,4 が含まれる）', () => {
+    const result = boardTasksFor(tasks, 'all')
+    expect(result.find(t => t.id === 3)).toBeTruthy()
+    expect(result.find(t => t.id === 4)).toBeTruthy()
+  })
+  it('バックログに sprintId ありのタスクは "all" でも除外される（id=2）', () => {
+    const result = boardTasksFor(tasks, 'all')
+    expect(result.find(t => t.id === 2)).toBeFalsy()
+  })
+})
+
+// R-009 computeProgress 追加ケース
+describe('computeProgress 追加 (S-009-01,02)', () => {
+  it('全タスクが done のとき 100%', () => {
+    const tasks = [{ columnId: 'done' }, { columnId: 'done' }]
+    expect(computeProgress(tasks).percent).toBe(100)
+  })
+  it('done が0のとき 0%', () => {
+    const tasks = [{ columnId: 'todo' }, { columnId: 'review' }]
+    expect(computeProgress(tasks).percent).toBe(0)
+  })
+})
+
+// R-012 normalizeStoryPoints 追加ケース
+describe('normalizeStoryPoints 追加 (S-012-05,06)', () => {
+  it('"1.5" のような小数は parseInt で 1 になる', () => {
+    expect(normalizeStoryPoints('1.5')).toBe(1)
+  })
+  it('"10" は 10 を返す', () => {
+    expect(normalizeStoryPoints('10')).toBe(10)
+  })
+})
+
+// R-016 dueBadgeClass 追加ケース
+describe('dueBadgeClass 追加 (S-016-03,04)', () => {
+  const now = new Date('2026-06-20T10:00:00')
+  it('dueDate が当日と同じ日のとき soon（2日以内なので）', () => {
+    expect(dueBadgeClass({ dueDate: '2026-06-20', columnId: 'todo' }, now)).toBe('due-badge--soon')
+  })
+  it('columnId が "in-progress" のとき超過は overdue になる（done 以外）', () => {
+    expect(dueBadgeClass({ dueDate: '2026-06-10', columnId: 'in-progress' }, now)).toBe('due-badge--overdue')
+  })
+})
+
 // R-011 アクティブスプリント自動選択 / S-011-10
 describe('autoSelectedSprintId (S-011-10)', () => {
   it('アクティブなスプリントがあればそのIDを返す', () => {

@@ -61,4 +61,39 @@ describe('CardModal (R-002, R-003)', () => {
     fireEvent.click(screen.getByRole('button', { name: '削除する' }))
     expect(onDelete).toHaveBeenCalled()
   })
+
+  it('背景（backdrop）クリックで onClose が呼ばれる (S-002-04)', () => {
+    const onClose = vi.fn()
+    const { container } = render(<CardModal task={baseTask} onSave={() => {}} onDelete={() => {}} onClose={onClose} />)
+    const backdrop = container.querySelector('.modal-backdrop')
+    fireEvent.click(backdrop)
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('担当者欄が入力フィールドとして表示される（assignees=[]のとき）(S-002-02)', () => {
+    render(<CardModal task={baseTask} assignees={[]} onSave={() => {}} onDelete={() => {}} onClose={() => {}} />)
+    expect(screen.getByDisplayValue('田中')).toBeInTheDocument()
+    // 担当者欄はテキスト入力（selectではない）
+    const input = screen.getByDisplayValue('田中')
+    expect(input.tagName.toLowerCase()).toBe('input')
+  })
+
+  it('担当者が登録されている場合、担当者欄がドロップダウンになる (S-019-06)', () => {
+    const assignees = [{ id: 'a1', name: '田中' }, { id: 'a2', name: '鈴木' }]
+    render(<CardModal task={baseTask} assignees={assignees} onSave={() => {}} onDelete={() => {}} onClose={() => {}} />)
+    expect(screen.getByRole('option', { name: '田中' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: '鈴木' })).toBeInTheDocument()
+  })
+
+  it('スプリント一覧があるとき、スプリント割り当てドロップダウンが表示される (S-011-03)', () => {
+    const sprints = [{ id: 's1', name: 'Sprint 1' }]
+    render(<CardModal task={baseTask} sprints={sprints} onSave={() => {}} onDelete={() => {}} onClose={() => {}} />)
+    expect(screen.getByRole('option', { name: 'Sprint 1' })).toBeInTheDocument()
+  })
+
+  it('期限の入力欄が表示される (S-016-05)', () => {
+    render(<CardModal task={baseTask} onSave={() => {}} onDelete={() => {}} onClose={() => {}} />)
+    const dateInput = document.querySelector('input[type="date"]')
+    expect(dateInput).toBeTruthy()
+  })
 })

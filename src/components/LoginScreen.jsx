@@ -24,8 +24,9 @@ export default function LoginScreen({ onLogin }) {
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div>
-            <label className="form-label">ユーザーID</label>
+            <label className="form-label" htmlFor="login-user">ユーザーID</label>
             <input
+              id="login-user"
               className="form-input"
               type="text"
               value={user}
@@ -35,8 +36,9 @@ export default function LoginScreen({ onLogin }) {
             />
           </div>
           <div>
-            <label className="form-label">パスワード</label>
+            <label className="form-label" htmlFor="login-pass">パスワード</label>
             <input
+              id="login-pass"
               className="form-input"
               type="password"
               value={pass}
