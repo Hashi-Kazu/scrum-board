@@ -271,4 +271,130 @@ describe('autoSelectedSprintId (S-011-10)', () => {
     expect(autoSelectedSprintId([{ id: 's1', status: 'planned' }])).toBe('all')
     expect(autoSelectedSprintId([])).toBe('all')
   })
+  it('completed のみでも active が無ければ「all」', () => {
+    expect(autoSelectedSprintId([{ id: 's1', status: 'completed' }])).toBe('all')
+  })
+  it('active が複数あれば先頭の active を返す', () => {
+    const sprints = [
+      { id: 's1', status: 'active' },
+      { id: 's2', status: 'active' },
+    ]
+    expect(autoSelectedSprintId(sprints)).toBe('s1')
+  })
+})
+
+// ── 以下、境界値・異常系の追加カバレッジ ─────────────────────────────────
+
+// R-009 computeProgress 境界値
+describe('computeProgress 境界値 (S-009-01,02,04)', () => {
+  it('done と todo が混在し四捨五入が切り上がる（2/3=67%）', () => {
+    const tasks = [{ columnId: 'done' }, { columnId: 'done' }, { columnId: 'todo' }]
+    expect(computeProgress(tasks).percent).toBe(67)
+  })
+  it('backlog のタスクは完了にカウントされない', () => {
+    const tasks = [{ columnId: 'backlog' }, { columnId: 'done' }]
+    expect(computeProgress(tasks)).toEqual({ done: 1, total: 2, percent: 50 })
+  })
+})
+
+// R-012 sumStoryPoints 異常系
+describe('sumStoryPoints 異常系 (S-012-03)', () => {
+  it('storyPoints が undefined のタスクは0扱い', () => {
+    expect(sumStoryPoints([{ storyPoints: undefined }, { storyPoints: 4 }])).toBe(4)
+  })
+  it('storyPoints プロパティ自体が無いタスクも0扱い', () => {
+    expect(sumStoryPoints([{}, { storyPoints: 2 }])).toBe(2)
+  })
+})
+
+// R-008 avatarColor 異常系
+describe('avatarColor 異常系 (S-008-03)', () => {
+  it('null を渡してもエラーにならずパレット内の色を返す', () => {
+    expect(AVATAR_COLORS).toContain(avatarColor(null))
+  })
+  it('異なる頭文字は異なる色になりうる（決定的マッピング）', () => {
+    // 同じ頭文字なら必ず同じ色
+    expect(avatarColor('Alice')).toBe(avatarColor('Andrew'))
+  })
+})
+
+// R-016 formatDue 境界値
+describe('formatDue 境界値 (S-016-01)', () => {
+  it('1月1日は 1/1', () => {
+    expect(formatDue('2026-01-01')).toBe('1/1')
+  })
+  it('先頭ゼロの月日でもゼロを落とす', () => {
+    expect(formatDue('2026-09-08')).toBe('9/8')
+  })
+})
+
+// R-013 computeVelocity 異常系
+describe('computeVelocity 異常系 (S-013-01,05)', () => {
+  it('空配列は velocity=0, excludedCount=0', () => {
+    expect(computeVelocity([])).toEqual({ velocity: 0, excludedCount: 0 })
+  })
+  it('done でない SP 設定済みタスクはベロシティに含めない', () => {
+    const tasks = [
+      { columnId: 'in-progress', storyPoints: 5 },
+      { columnId: 'review', storyPoints: 3 },
+    ]
+    expect(computeVelocity(tasks).velocity).toBe(0)
+  })
+  it('storyPoints=0 は除外件数にカウントされる（falsy）', () => {
+    const tasks = [{ columnId: 'done', storyPoints: 0 }]
+    const { velocity, excludedCount } = computeVelocity(tasks)
+    expect(velocity).toBe(0)
+    expect(excludedCount).toBe(1)
+  })
+  it('SP未設定（undefined）も除外件数にカウントされる', () => {
+    const tasks = [{ columnId: 'done' }, { columnId: 'done', storyPoints: 2 }]
+    expect(computeVelocity(tasks).excludedCount).toBe(1)
+  })
+})
+
+// R-013 averageVelocity 異常系
+describe('averageVelocity 異常系 (S-013-04)', () => {
+  it('velocity=undefined のスプリントは平均算出から除外', () => {
+    expect(averageVelocity([{ velocity: undefined }, { velocity: 10 }])).toBe(10)
+  })
+  it('velocity=0 は有効な値として平均に含まれる', () => {
+    expect(averageVelocity([{ velocity: 0 }, { velocity: 10 }])).toBe(5)
+  })
+  it('平均は四捨五入される（10と11の平均=11）', () => {
+    expect(averageVelocity([{ velocity: 10 }, { velocity: 11 }])).toBe(11)
+  })
+})
+
+// R-004 boardTasksFor 異常系
+describe('boardTasksFor 異常系 (S-004-07)', () => {
+  it('backlog で sprintId が空文字のタスクも表示される（falsy）', () => {
+    const tasks = [{ id: 1, columnId: 'backlog', sprintId: '' }]
+    expect(boardTasksFor(tasks, 'all')).toHaveLength(1)
+  })
+  it('スプリントフィルタ中、非バックログで sprintId 不一致は除外', () => {
+    const tasks = [{ id: 1, columnId: 'todo', sprintId: 'b' }]
+    expect(boardTasksFor(tasks, 'a')).toHaveLength(0)
+  })
+  it('空配列は空配列を返す', () => {
+    expect(boardTasksFor([], 'all')).toEqual([])
+  })
+})
+
+// R-007 priorityMeta 異常系
+describe('priorityMeta 異常系 (S-007-01,02)', () => {
+  it('null/undefined は中にフォールバック', () => {
+    expect(priorityMeta(null).label).toBe('中')
+    expect(priorityMeta(undefined).label).toBe('中')
+  })
+})
+
+// R-012 normalizeStoryPoints 異常系
+describe('normalizeStoryPoints 異常系 (S-012-05,06)', () => {
+  it('数値型の入力も文字列化して処理する', () => {
+    expect(normalizeStoryPoints(5)).toBe(5)
+    expect(normalizeStoryPoints(0)).toBe(1)
+  })
+  it('前後に空白がある数値も解釈する', () => {
+    expect(normalizeStoryPoints('  7  ')).toBe(7)
+  })
 })
