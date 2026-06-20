@@ -77,6 +77,7 @@ VITE_AUTH_PASS=（任意）
   - 最終ゲート（バージョン整合・lint/build 失敗時は push せず停止）は `publisher` 側で従来どおり機能する
 - バージョンポリシー: 要件変更あり → マイナーアップ / コード修正のみ → パッチアップ
 - 検証は `npm run lint`（ESLint）と `npm run build`。画面に出る変更は dev サーバー（localhost:5173）でブラウザ確認する
+- **`feature-dev` はテストを実行しない**（`npm test` / `vitest` 等の実行は `acceptance-test` の責務。テストコードの更新・追加は行ってよいが、実行はしない）
 
 ## エージェント一覧
 
