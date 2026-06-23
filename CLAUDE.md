@@ -90,6 +90,11 @@ VITE_AUTH_PASS=（任意）
 
 > **エージェント定義の管理**: `.claude/agents/*.md` は `C:\Claude Code\_agent-templates`（正本）から同期されたコピー。**直接編集せず**、正本を編集して `_agent-templates\sync-agents.ps1` を実行すること（直接編集は次回同期で上書きされる）。プロジェクト固有の事情はエージェントではなくこの CLAUDE.md に書く。
 
+## アーキテクチャ判断
+
+重要な設計判断は [docs/adr/](docs/adr/) に記録されている。  
+新機能実装や既存コードの変更前に、関連する ADR を確認すること。
+
 ## 注意事項
 
 - **データはすべて Supabase に保存**。ローカルの `localStorage` は使っていない。
