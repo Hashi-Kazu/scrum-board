@@ -88,7 +88,7 @@ VITE_AUTH_PASS=（任意）
 | `acceptance-test` | 受け入れテスト実行・ステータス `■■■` 反映 |
 | `publisher` | git push（このアプリはプラグインではなく**自動公開なし**。push＝リモート反映まで） |
 
-> **エージェント定義の管理**: `.Codex/agents/*.md` は `C:\Codex\_agent-templates`（正本）から同期されたコピー。**直接編集せず**、正本を編集して `_agent-templates\sync-agents.ps1` を実行すること（直接編集は次回同期で上書きされる）。プロジェクト固有の事情はエージェントではなくこの AGENTS.md に書く。
+> **エージェント定義の管理**: エージェント定義（Claude Code = `.claude/agents/*.md`、Codex = `.codex/agents/*.toml`）は `C:\Claude Code\_agent-templates`（正本）から配布された同期コピー。**直接編集せず**、正本を編集して `_agent-templates\sync-agents.ps1` を実行すること（直接編集は次回同期で上書きされる）。プロジェクト固有の事情はエージェントではなく、このプロジェクト指示ファイル（`AGENTS.md`＝正本 / `CLAUDE.md` は `@AGENTS.md` で取り込み）に書く。
 
 ## アーキテクチャ判断
 
