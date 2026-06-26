@@ -1,102 +1,58 @@
 # scrum-board
 
-スクラムチーム向けのかんばんボードアプリ。React + Vite + Supabase 構成。
+Scrum board app for teams. React + Vite + Supabase.
 
-## 技術スタック
+## 必須ルール
 
-- **フレームワーク**: React 19 + Vite 8（JSX、TypeScript なし）
-- **バックエンド**: Supabase（DB + リアルタイム）
-- **DnD**: @dnd-kit/core + @dnd-kit/sortable
-- **チャート**: recharts
-- **リント**: ESLint 10
+- 開発タスクは `feature-dev` を使う。
+- `feature-dev` はコード修正・仕様書更新・バージョン更新・受け入れテスト更新まで担当する。
+- `feature-dev` は `npm test` / `vitest` を実行しない。テストコードの更新・追加は行ってよい。
+- 受け入れテストは、ユーザーから明示指示がある場合のみ `acceptance-test` で実行する。
+- publish は `publisher` が build / commit / push まで担当する。このアプリは push までで、自動公開はない。
+- 要求仕様書の正本は `docs/requirements-usdm.md`。
+- 要求・仕様を変えたら `docs/requirements-usdm.md` を更新し、`package.json` の version を揃える。
+- アーキテクチャ変更時は `docs/architecture.md` と関連 ADR を確認・更新する。
+- データ通信は hooks 経由に限定し、コンポーネントから直接 Supabase を呼ばない。
 
-## コマンド
+## 必要時に読む詳細
+
+- 要求・仕様変更時: `docs/requirements-usdm.md`
+- アーキテクチャ・データモデル・設計制約変更時: `docs/architecture.md` と `docs/adr/`
+- エージェント運用判断時: `docs/ai/agent-workflow.md`
+- 技術スタック・構成確認時: `docs/ai/project-overview.md`
+- リリース・バージョン判断時: `docs/ai/release-policy.md`
+
+## よく使うコマンド
 
 ```bash
-npm run dev       # 開発サーバー起動 (localhost:5173)
-npm run build     # プロダクションビルド → dist/
-npm run lint      # ESLint
-npm run preview   # dist/ をローカルサーブ
+npm run build
+npm run lint
+npm test
 ```
 
-## ディレクトリ構成
+## publisher 最短フロー
 
-```
-src/
-  components/   # UI コンポーネント（Board, Card, Column, Modal 類）
-  hooks/        # カスタムフック（Supabase との通信ロジック）
-    useProjects.js   # プロジェクト CRUD
-    useSprints.js    # スプリント CRUD + activate/complete
-    useTasks.js      # タスク CRUD + 移動・並び替え
-    useAssignees.js  # 担当者 CRUD
-  lib/
-    supabase.js   # Supabase クライアント初期化
-  App.jsx         # ルート。認証ラッパー(App) + ボード本体(BoardApp)
-  main.jsx
-```
+publisher は以下だけ行う:
 
-## カラム構成
+1. `git status -sb`
+2. `npm run build`
+3. `git diff --stat`
+4. 必要な変更だけ stage
+5. commit
+6. push
 
-| id | 表示名 |
-|----|--------|
-| backlog | プロダクトバックログ |
-| todo | 未着手 |
-| in-progress | 進行中 |
-| review | レビュー |
-| done | 完了 |
+禁止:
 
-backlog カラムのタスクは `sprintId = null`。それ以外はアクティブスプリントに紐づく。
+- リポジトリ全体の再調査
+- docs 全体の読み直し
+- 不要なレビュー
+- `npm test` の実行
+- 機能コードの編集
 
-## 認証
+## 参照先
 
-環境変数 `VITE_AUTH_USER` / `VITE_AUTH_PASS` が設定されている場合のみ認証画面を表示。
-セッション情報は `sessionStorage` の `sb-auth` キーで保持。
-
-## 環境変数（.env）
-
-```
-VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...
-VITE_AUTH_USER=（任意）
-VITE_AUTH_PASS=（任意）
-```
-
-## 開発ルール
-
-**コード修正・機能追加・バグ修正など、あらゆる開発タスクは必ず `feature-dev` エージェントを通して行うこと。**
-
-- `feature-dev` がコード修正・仕様書更新（ステータス `■■□`）・バージョンバンプ・受け入れテスト更新を一括で行う
-- バグ調査が必要な場合は `debugger` を呼ぶ（**すべてのエージェント起動は main が行う**。サブエージェント間で直接指示はできない）
-- **開発完了後の自動フロー**（すべて main が順に起動する）:
-  1. `feature-dev` が成功報告（lint/build 通過、ステータス `■■□` 更新済み）
-  2. **受け入れテストはユーザーから明示的に指示があった場合のみ実行する。** 指示がない場合はスキップして手順 3 へ進む。実行する場合: main が `acceptance-test` を起動 → テスト実行・ステータス `■■■` 反映・結果返却
-     - **FAIL あり**: main が `feature-dev` を再起動して修正させる（FAIL 詳細を渡す）
-     - **PASS / SKIP のみ**: 手順 3 へ進む
-  3. main が `publisher` を起動 → commit〜push まで完了
-  - 停止するケース: `feature-dev` が失敗・中断、または「`debugger` 必要」と報告した場合は以降を起動せず停止して報告する
-  - 最終ゲート（バージョン整合・lint/build 失敗時は push せず停止）は `publisher` 側で従来どおり機能する
-- バージョンポリシー: 要件変更あり → マイナーアップ / コード修正のみ → パッチアップ
-- 検証は `npm run lint`（ESLint）と `npm run build`。画面に出る変更は dev サーバー（localhost:5173）でブラウザ確認する
-- **`feature-dev` はテストを実行しない**（`npm test` / `vitest` 等の実行は `acceptance-test` の責務。テストコードの更新・追加は行ってよいが、実行はしない）
-
-## エージェント一覧
-
-| エージェント | 役割 |
-|---|---|
-| `feature-dev` | 開発全部（コード・仕様書・バージョン・受け入れテスト更新） |
-| `debugger` | バグ調査のみ（読み取り専用） |
-| `acceptance-test` | 受け入れテスト実行・ステータス `■■■` 反映 |
-| `publisher` | git push（このアプリはプラグインではなく**自動公開なし**。push＝リモート反映まで） |
-
-> **エージェント定義の管理**: エージェント定義（Claude Code = `.claude/agents/*.md`、Codex = `.codex/agents/*.toml`）は `C:\Claude Code\_agent-templates`（正本）から配布された同期コピー。**直接編集せず**、正本を編集して `_agent-templates\sync-agents.ps1` を実行すること（直接編集は次回同期で上書きされる）。プロジェクト固有の事情はエージェントではなく、このプロジェクト指示ファイル（`AGENTS.md`＝正本 / `CLAUDE.md` は `@AGENTS.md` で取り込み）に書く。
-
-## アーキテクチャ判断
-
-重要な設計判断は [docs/adr/](docs/adr/) に記録されている。  
-新機能実装や既存コードの変更前に、関連する ADR を確認すること。
-
-## 注意事項
-
-- **データはすべて Supabase に保存**。ローカルの `localStorage` は使っていない。
-- hooks がデータ通信の唯一の窓口。コンポーネントから直接 Supabase を呼ばない。
-- タスクを backlog に移動すると自動で `sprintId = null` にリセットされる（`handleMoveTask` / `handleReorderTasks` 参照）。
+- 技術スタック・構成: `docs/ai/project-overview.md`
+- エージェント運用詳細: `docs/ai/agent-workflow.md`
+- リリース運用: `docs/ai/release-policy.md`
+- 要求仕様: `docs/requirements-usdm.md`
+- アーキテクチャ: `docs/architecture.md`
