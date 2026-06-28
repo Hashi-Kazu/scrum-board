@@ -23,3 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 ai_summary.txt
+
+*.tmp
