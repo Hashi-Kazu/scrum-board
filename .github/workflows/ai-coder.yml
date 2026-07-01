@@ -39,9 +39,14 @@ jobs:
               - コンポーネントは `src/components/`
               - Supabase 通信ロジックは `src/hooks/`
               - エントリポイントは `src/App.jsx`
-           3. `feature/issue-${{ github.event.issue.number }}` ブランチを作成して変更をコミットする
+           3. コミット前に `package.json` の `version` を確認し、必要に応じて更新する
+              - 判定基準は `docs/ai/release-policy.md` の「バージョンポリシー」に従う
+                - 要件変更あり（`docs/requirements-usdm.md` の仕様内容に変更が生じる修正） → マイナーアップ
+                - コード修正のみ（バグ修正・リファクタ等、要件変更を伴わない） → パッチアップ
+              - 要件変更を行った場合は `docs/requirements-usdm.md` 冒頭の「バージョン」「最終更新」欄と `package.json` の `version` を同じ値に揃える
+           4. `feature/issue-${{ github.event.issue.number }}` ブランチを作成して変更をコミットする
               - コミットメッセージは日本語で簡潔に（例: `feat: ○○機能を追加 (#${{ github.event.issue.number }})`）
-           4. main ブランチへの draft PR を作成する
+           5. main ブランチへの draft PR を作成する
               - PR タイトル: `feat: ${{ github.event.issue.title }}`
               - PR 本文に変更内容のサマリーと `Closes #${{ github.event.issue.number }}` を含める
 
@@ -51,6 +56,7 @@ jobs:
            - Supabase 通信は必ず `src/hooks/` のカスタムフック経由で行う（コンポーネントから直接呼ばない）
            - `CLAUDE.md` はコード構成・規約の参照用として読み、エージェント定義（`.claude/agents/`）に従って実装すること
            - コメントは WHY が非自明な場合のみ書く
+           - バージョンポリシーの詳細は `docs/ai/release-policy.md` を参照する
          claude_args: |
            --max-turns 100
            --dangerously-skip-permissions
